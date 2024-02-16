@@ -1,8 +1,6 @@
 # TECH READ QA TEAM
 
-¡Excelente! Vamos a comenzar paso a paso.
-
-Aquí hay una guía básica para configurar un proyecto Python con Visual Studio Code, Pytest, y asegurándonos de que sea compatible con macOS y Windows.
+Esta es una guía básica para configurar un proyecto Python con Visual Studio Code, Pytest, y asegurándonos de que sea compatible con macOS y Windows.
 
 ## Paso 1: Clonar el Repositorio
 
@@ -48,12 +46,21 @@ pip install -r requirements.txt
 2. Abre el menú "View" > "Command Palette" (o presiona Cmd + Shift + P en macOS o Ctrl + Shift + P en Windows/Linux) y escribe "Python: Select Interpreter".
 3. Selecciona el intérprete Python del entorno virtual que creaste en el paso 3 (tu_proyecto/venv/bin/python en macOS o tu_proyecto\venv\Scripts\python.exe en Windows).
 
-## Paso 6: Configurar Pytest en Visual Studio Code
-1. Asegúrate de tener la extensión "Python Test Explorer for Visual Studio" instalada desde la pestaña de Extensions.
-2. Abre el menú "View" > "Command Palette" y escribe "Python Test Explorer: Discover Tests".
-3. Configura el archivo de configuración pytest.ini o setup.cfg según tus necesidades. Puedes dejarlo vacío por ahora y configurarlo más tarde.
+## Paso 6: Configurar la raíz del proyecto
+Debemos agregar el directorio de la raíz del proyecto a la variable de entorno PYTHONPATH.
 
-## Paso 7: Prueba de Ejecución con Pytest
-Crea algunos tests en tu proyecto y ejecútalos utilizando el explorador de pruebas de Visual Studio Code.
+1. Añade el directorio raíz del proyecto a PYTHONPATH:
+   - Abre la terminal de Visual Studio Code.
+   - Ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH:
 
-Con estos pasos, deberías tener un entorno de desarrollo básico configurado en macOS. Repite los pasos en Windows, asegurándote de utilizar barras invertidas `\` en lugar de barras diagonales `/` en los comandos de terminal. Además, ten en cuenta las diferencias de configuración para rutas y activación de entornos virtuales en Windows.
+```sh
+export PYTHONPATH=/Users/TU_USER/Documents/technocrat_repositories/CrossQualityTeam/tech-red-qa
+```
+
+2. Ejecuta pytest:
+
+Ejecuta tus pruebas desde el terminal de Visual Studio Code. Puedes usar el siguiente comando:
+```sh
+pytest tests/
+```
+<img width="1026" alt="pytest_test" src="https://github.com/PlatformUnityCI/cross-quality-ci/assets/9554315/4568e2a9-a390-48cf-83ca-a3d87c2bb8cf">
