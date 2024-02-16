@@ -1,0 +1,3 @@
+pytest
+
+# Agrega otras dependencias según sea necesario
