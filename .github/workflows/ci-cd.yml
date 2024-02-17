@@ -29,6 +29,10 @@ jobs:
           echo "PATH=\$PATH:${{ github.workspace }}/src" >> $GITHUB_ENV
           source $GITHUB_ENV
 
+      - name: Debug src directory
+        run: |
+          python -c "import os; print(os.listdir('${{ github.workspace }}/src'))"
+
       - name: Run tests
         run: |
           echo "PYTHONPATH: $PYTHONPATH"
