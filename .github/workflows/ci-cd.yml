@@ -64,8 +64,17 @@ jobs:
         echo "Current directory: $(pwd)"
         echo "PATH: $PATH"
 
-    - name: Checkout QA tests
-      run: git clone -b ${{ github.head_ref }} "git@github.com:${{ env.TECH_REPO }}" tests
+    - name: Setup Github SSH key
+      run: |
+        mkdir -p "$HOME/.ssh"
+        tr -d '\r' <<< "${{ secrets.GITHUB_TOKEN }}" > "$HOME/.ssh/id_rsa"
+        chmod 600 "$HOME/.ssh/id_rsa"
+        ssh-keyscan -H 'github.com' >> "$HOME/.ssh/known_hosts"
+
+    - name: Checkout QA tests on workflow_dispatch
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
     - name: Run tests
       timeout-minutes: 20
