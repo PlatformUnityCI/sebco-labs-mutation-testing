@@ -54,7 +54,7 @@ Debemos agregar el directorio de la raíz del proyecto a la variable de entorno 
    - Ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH:
 
 ```sh
-export PYTHONPATH=/Users/TU_USER/Documents/technocrat_repositories/CrossQualityTeam/tech-red-qa
+export PYTHONPATH=/Users/sebastian.couto/Documents/technocrat_repositories/CrossQualityTeam/tech-red-qa
 ```
 
 2. Ejecuta pytest:
