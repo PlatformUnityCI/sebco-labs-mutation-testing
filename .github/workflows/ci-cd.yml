@@ -37,4 +37,4 @@ jobs:
         run: |
           PYTHONPATH=${{ github.workspace }}/src pytest tests
         env:
-          PYTHONPATH: ${{ github.workspace }}/src
+          PYTHONPATH: ${{ github.workspace }}/tech-red-qa/src
