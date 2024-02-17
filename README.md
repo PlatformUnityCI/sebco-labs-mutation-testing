@@ -72,6 +72,19 @@ Si deseas hacer que la configuración sea persistente y se aplique cada vez que 
    echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.zshrc
    ```
 
+## Impresión del proyecto
+```sh
+tech-red-qa/
+│
+├── src/
+│   └── labs/
+│       └── my_code.py
+│ 
+└── tests/
+   └── labs/
+      └── test_foo.py
+```
+
 ## Paso 7: Ejecución de los tests
 Ejecuta tus pruebas desde el terminal de Visual Studio Code. Puedes usar el siguiente comando:
 ```sh
