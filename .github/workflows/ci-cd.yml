@@ -35,6 +35,6 @@ jobs:
 
       - name: Run tests
         run: |
-          PYTHONPATH=${{ github.workspace }}/src pytest tests
+          pytest tests --rootdir=${{ github.workspace }}
         env:
           PYTHONPATH: ${{ github.workspace }}/src
