@@ -72,4 +72,4 @@ jobs:
     - name: Set up PYTHONPATH
       run: |
         echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-        echo "::add-pat
+        echo "PATH=\$PATH:$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
