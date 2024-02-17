@@ -22,7 +22,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        repository: https://github.com/PlatformUnityCI/tech-red-qa.git
+        repository: PlatformUnityCI/tech-red-qa
+        token: ${{ secrets.GITHUB_TOKEN }}
+        ssh-strict: true
+        persist-credentials: true
+        clean: true
+        fetch-depth: 1
+        lfs: false
+        submodules: false
+        set-safe-directory: true
+      env:
+        QA_REPO: utech-red-qa
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
