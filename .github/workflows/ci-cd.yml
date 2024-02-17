@@ -29,9 +29,19 @@ jobs:
         submodules: false
         set-safe-directory: true
 
-    - name: Install Git
-      run: sudo apt-get install git
-      
+    - name: Set up PYTHONPATH
+      run: |
+        echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
+        echo "PATH=\$PATH:$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
+        
+    - name: Set up Git
+      uses: actions/setup-git@v2
+      with:
+        fetch-depth: 0  # Para clonar todas las ramas
+
+    - name: Add Git to PATH
+      run: echo "PATH=\$PATH:$RUNNER_TOOL_CACHE/git/2.40.0/x64" >> $GITHUB_ENV
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -42,11 +52,6 @@ jobs:
       with:
         python-version: v3.11
         architecture: 'x64'
-
-    - name: Set up PYTHONPATH
-      run: |
-        echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-        echo "PATH=\$PATH:$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
 
     - name: Install requirements
       run: |
