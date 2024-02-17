@@ -5,7 +5,7 @@ on:
     branches:
       - main
   workflow_dispatch:
-      inputs:
+    inputs:
       qa_ref:
         description: 'QA repository branch (e.g. feat-branch) or tag (e.g. v1.0.0)'
         default: main
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout repository and install Git
       uses: actions/checkout@v2
       with:
         repository: PlatformUnityCI/tech-red-qa
@@ -31,8 +31,9 @@ jobs:
         lfs: false
         submodules: false
         set-safe-directory: true
-      env:
-        TECH_REPO: tech-red-qa
+
+    - name: Install Git
+      run: sudo apt-get install git
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -55,22 +56,22 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Checkout QA tests on workflow_dispatch
-      if: ${{ github.event_name == 'workflow_dispatch' }}
+    - name: Print environment info
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "PATH: $PATH"
+
+    - name: Checkout QA tests
       run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
-    - name: Checkout QA tests on Pull request
-      if: ${{ github.event_name == 'pull_request' }}
-      run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
-
-    - name: Run tests on workflow_dispatch  
+    - name: Run tests
       timeout-minutes: 20
-      if: ${{ github.event_name == 'workflow_dispatch' }}
       run: pytest tests/
       working-directory: tests
+      if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
 
     - name: Run tests on workflow_schedule
       timeout-minutes: 20
-      if: ${{ github.event_name == 'schedule' }}
       run: pytest tests/
       working-directory: tests
+      if: ${{ github.event_name == 'schedule' }}
