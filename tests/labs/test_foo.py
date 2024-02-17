@@ -1,4 +1,4 @@
-from source.labs.my_code import foo
+from source.my_code import foo
 import logging
 
 def test_foo():
