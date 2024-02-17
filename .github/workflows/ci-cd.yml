@@ -29,11 +29,6 @@ jobs:
         submodules: false
         set-safe-directory: true
 
-    - name: Set up Git
-      uses: actions/setup-git@v2.40.0
-      with:
-        fetch-depth: 0  # Para clonar todas las ramas
-
     - name: Set up PYTHONPATH and PATH
       run: |
         echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
