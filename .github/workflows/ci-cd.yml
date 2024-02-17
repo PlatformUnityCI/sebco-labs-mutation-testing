@@ -52,7 +52,9 @@ jobs:
 
     - name: Checkout QA tests on workflow_dispatch
       if: ${{ github.event_name == 'workflow_dispatch' }}
-      run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
+      run: |
+        mkdir -p tests
+        git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
     - name: Checkout QA tests on workflow_schedule
       if: ${{ github.event_name == 'schedule' }}
