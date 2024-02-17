@@ -74,3 +74,4 @@ jobs:
       if: ${{ github.event_name == 'schedule' }}
       run: pytest tests/
       working-directory: tests
+      
