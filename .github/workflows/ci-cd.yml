@@ -64,6 +64,7 @@ jobs:
     - name: Debug github.head_ref
       run: |
         echo "github.head_ref: ${{ github.head_ref }}"
+        echo "github.event.inputs.qa_ref: ${{ github.event.inputs.qa_ref }}"
 
     - name: Checkout QA tests on workflow_dispatch
       if: ${{ github.event_name == 'workflow_dispatch' }}
