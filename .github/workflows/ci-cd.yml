@@ -77,4 +77,4 @@ jobs:
       timeout-minutes: 20
       run: pytest tests/
       working-directory: tests
-      if: ${{ github.event_name == 'workflow_dispatch'' }}
+      if: ${{ github.event_name == 'workflow_dispatch' }}
