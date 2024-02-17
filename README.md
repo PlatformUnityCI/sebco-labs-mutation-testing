@@ -49,16 +49,30 @@ pip install -r requirements.txt
 ## Paso 6: Configurar la raíz del proyecto
 Debemos agregar el directorio de la raíz del proyecto a la variable de entorno PYTHONPATH.
 
-1. Añade el directorio raíz del proyecto a PYTHONPATH:
-   - Abre la terminal de Visual Studio Code.
-   - Ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH:
+Añade el directorio raíz del proyecto a PYTHONPATH:
+- Abre la terminal de Visual Studio Code.
+- Ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH:
 
 ```sh
-export PYTHONPATH=/Users/sebastian.couto/Documents/technocrat_repositories/CrossQualityTeam/tech-red-qa
+export PYTHONPATH= "..ruta local de tu proyecto/tech-red-qa"
 ```
+*IMPORTANTE: Ten en cuenta que la configuración de `PYTHONPATH` que estableces con el comando export `PYTHONPATH=...` en la terminal de Visual Studio Code es efectiva solo para la sesión actual de la terminal. Esto significa que la configuración se perderá una vez que cierres la terminal o reinicies tu sistema.*
 
-2. Ejecuta pytest:
+Si deseas hacer que la configuración sea persistente y se aplique cada vez que abres una nueva terminal o reinicias tu sistema, puedes agregar el comando a un archivo de inicio de shell, como el archivo .bashrc o .zshrc según el shell que estés utilizando.
 
+### Bash (.bashrc):
+   Abre o crea el archivo .bashrc en tu directorio de inicio y agrega la línea al final del archivo:
+   ```sh
+   echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.bashrc
+   ```
+
+### Zsh (.zshrc):
+   Si estás utilizando Zsh, realiza un paso similar en el archivo .zshrc:
+   ```sh
+   echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.zshrc
+   ```
+
+## Paso 7: Ejecución de los tests
 Ejecuta tus pruebas desde el terminal de Visual Studio Code. Puedes usar el siguiente comando:
 ```sh
 pytest tests/
