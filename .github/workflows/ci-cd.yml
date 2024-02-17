@@ -69,7 +69,7 @@ jobs:
     - name: Checkout QA tests on workflow_dispatch
       if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
-        git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
+        git clone -b ${{ github.event.inputs.qa_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
     - name: Run tests
       timeout-minutes: 20
