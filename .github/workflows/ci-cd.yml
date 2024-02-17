@@ -34,6 +34,11 @@ jobs:
       env:
         TECH_REPO: tech-red-qa
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '21.6.2'
+        
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -44,14 +49,6 @@ jobs:
       run: |
         echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
         echo "PATH=\$PATH:$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-
-    - name: Install tar
-      run: sudo apt-get install tar
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '21.6.2'
 
     - name: Install requirements
       run: |
