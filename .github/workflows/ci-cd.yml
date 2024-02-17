@@ -29,11 +29,6 @@ jobs:
         submodules: false
         set-safe-directory: true
 
-    - name: Set up PYTHONPATH and PATH
-      run: |
-        echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-        echo "PATH=\$PATH:$GITHUB_WORKSPACE/src:$RUNNER_TOOL_CACHE/git/2.40.0/x64" >> $GITHUB_ENV
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -60,6 +55,11 @@ jobs:
         echo "github.head_ref: ${{ github.head_ref }}"
         echo "github.event.inputs.qa_ref: ${{ github.event.inputs.qa_ref }}"
 
+    - name: Set up PYTHONPATH and PATH
+      run: |
+        echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
+        echo "PATH=\$PATH:$GITHUB_WORKSPACE/src:$RUNNER_TOOL_CACHE/git/2.40.0/x64" >> $GITHUB_ENV
+        
     - name: Checkout QA tests on workflow_dispatch
       if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
