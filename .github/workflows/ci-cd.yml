@@ -26,7 +26,7 @@ jobs:
 
     - name: Run tests
       run: |
-        cd ${{ github.workspace }}/tests
-        PYTHONPATH=${{ github.workspace }}/src/labs pytest labs/test_foo.py
+        cd ${{ github.workspace }}
+        PYTHONPATH=${{ github.workspace }}/src pytest tests/labs/test_foo.py
       env:
-        PYTHONPATH: ${{ github.workspace }}/src/labs
+        PYTHONPATH: ${{ github.workspace }}/src
