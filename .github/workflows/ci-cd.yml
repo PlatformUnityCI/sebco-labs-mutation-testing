@@ -13,12 +13,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        ref: v2.4.4
+        ref: v20.11.1
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.x
+        python-version: v3.9
 
     - name: Install dependencies
       run: |
