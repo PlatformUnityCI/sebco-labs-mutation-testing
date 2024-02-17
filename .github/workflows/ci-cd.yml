@@ -65,7 +65,7 @@ jobs:
         echo "PATH: $PATH"
 
     - name: Checkout QA tests
-      run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
+      run: git clone -b ${{ github.head_ref }} "git@github.com:PlatformUnityCI/${{ env.TECH_REPO }}" tests
 
     - name: Run tests
       timeout-minutes: 20
