@@ -35,6 +35,9 @@ jobs:
     - name: Install Git
       run: sudo apt-get install git
 
+    - name: Add Git to PATH
+      run: echo "PATH=\$PATH:/usr/bin" >> $GITHUB_ENV
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
