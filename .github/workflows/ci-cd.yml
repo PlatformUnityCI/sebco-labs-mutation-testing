@@ -29,10 +29,6 @@ jobs:
           echo "PATH=\$PATH:${{ github.workspace }}/src" >> $GITHUB_ENV
           source $GITHUB_ENV
 
-      - name: Debug src directory
-        run: |
-          find ${{ github.workspace }}/src
-
       - name: Run tests
         run: |
           echo "PYTHONPATH: $PYTHONPATH"
