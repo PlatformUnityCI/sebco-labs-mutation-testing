@@ -1,16 +1,6 @@
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      PYTHONPATH: ${{ github.workspace }}/src
 
     steps:
       - name: Checkout repository
@@ -25,6 +15,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Set up PYTHONPATH
+        run: |
+          echo "PYTHONPATH=${{ github.workspace }}/src" >> $GITHUB_ENV
+          echo "PATH=\$PATH:${{ github.workspace }}/src" >> $GITHUB_ENV
+          source $GITHUB_ENV
+
+      - name: Debug src directory
+        run: |
+          ls -R ${{ github.workspace }}/src
 
       - name: Run tests
         run: |
