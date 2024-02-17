@@ -8,7 +8,7 @@ on:
     inputs:
       qa_ref:
         description: 'QA repository branch (e.g. feat-branch) or tag (e.g. v1.0.0)'
-        default: main
+        default: tech-red-qa-branch
         required: true
 
 env:
