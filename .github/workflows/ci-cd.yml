@@ -22,7 +22,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        ref: v2
+        repository: https://github.com/PlatformUnityCI/tech-red-qa.git
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
