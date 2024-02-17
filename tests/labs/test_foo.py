@@ -1,4 +1,4 @@
-from  src.labs.my_code import foo
+from  my_code import foo
 
 def test_foo():
     result = foo()
