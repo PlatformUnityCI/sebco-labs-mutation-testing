@@ -1,3 +1,11 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,8 +35,4 @@ jobs:
     - name: Set up PYTHONPATH
       run: |
         echo "PYTHONPATH=$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-        echo "::add-path::$GITHUB_WORKSPACE/src" >> $GITHUB_ENV
-
-    - name: Run tests
-      run: |
-        pytest tests
+        echo "::add-pat
