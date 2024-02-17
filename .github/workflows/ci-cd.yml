@@ -12,7 +12,7 @@ on:
         required: true
 
 env:
-  QA_REPO: utech-red-qa
+  TECH_REPO: tech-red-qa
 
 jobs:
   build:
@@ -32,7 +32,7 @@ jobs:
         submodules: false
         set-safe-directory: true
       env:
-        QA_REPO: utech-red-qa
+        TECH_REPO: tech-red-qa
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -52,16 +52,15 @@ jobs:
 
     - name: Checkout QA tests on workflow_dispatch
       if: ${{ github.event_name == 'workflow_dispatch' }}
-      run: |
-        git clone -b ${{ inputs.qa_ref }} "git@github.com:Bancar/${{ env.QA_REPO }}" tests
+      run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
     - name: Checkout QA tests on workflow_schedule
       if: ${{ github.event_name == 'schedule' }}
-      run: git clone -b main "git@github.com:Bancar/${{ env.QA_REPO }}" tests
+      run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
     - name: Checkout QA tests on Pull request
       if: ${{ github.event_name == 'pull_request' }}
-      run: git clone -b ${{ github.head_ref }} "git@github.com:Bancar/${{ env.QA_REPO }}" tests
+      run: git clone -b ${{ github.head_ref }} "git@github.com:Technocrat/${{ env.TECH_REPO }}" tests
 
     - name: Setup Python
       uses: actions/setup-python@v4
