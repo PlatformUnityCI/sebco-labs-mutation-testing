@@ -13,6 +13,15 @@ mkdir .github
 mkdir .github/workflows
 touch .github/workflows/ci-cd.yml
 ```
+Bien, ahora la estructura de directorios para alojar todos los archivos `.yml` está creado:
+
+```sh
+tech-red-qa/
+│
+└── .github/
+    └── workflows/
+        └── ci-cd.yml
+```
 
 ## 3. Edita el archivo ci-cd.yml con la siguiente configuración básica:
 Este flujo de trabajo se ejecutará en cada push a la rama principal y realizará las siguientes acciones:
@@ -36,12 +45,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.x
+        python-version: v3.11
+        architecture: 'x64'
 
     - name: Install dependencies
       run: |
