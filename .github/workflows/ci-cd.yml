@@ -65,7 +65,7 @@ jobs:
         echo "PATH: $PATH"
 
     - name: Debug github.head_ref
-      run: 
+      run: |
         echo "github.head_ref: ${{ github.head_ref }}"
 
     - name: Checkout QA tests on workflow_dispatch
