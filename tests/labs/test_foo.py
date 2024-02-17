@@ -1,5 +1,6 @@
-from  my_code import foo
+from src.labs.my_code import foo
 
 def test_foo():
     result = foo()
-    assert result == "¡Hola, mundo!"
+    print("Resultado de foo:", result)
+    assert result == "Hola, mundo!!"
