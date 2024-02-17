@@ -50,7 +50,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: v3.11
+        python-version: v3.X
         architecture: 'x64'
 
     - name: Install dependencies
