@@ -31,7 +31,7 @@ jobs:
 
       - name: Debug src directory
         run: |
-          ls -R ${{ github.workspace }}/src
+          find ${{ github.workspace }}/src
 
       - name: Run tests
         run: |
