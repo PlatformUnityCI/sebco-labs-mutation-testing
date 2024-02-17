@@ -30,7 +30,7 @@ jobs:
         set-safe-directory: true
 
     - name: Set up Git
-      uses: actions/setup-git@v2
+      uses: actions/setup-git@v2.40.0
       with:
         fetch-depth: 0  # Para clonar todas las ramas
 
