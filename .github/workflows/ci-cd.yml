@@ -25,7 +25,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Configure Python Path
-      run: echo "PYTHONPATH=${{ github.workspace }}/tech-red-qa/src" >> $GITHUB_ENV
+      run: echo "PYTHONPATH=${{ github.workspace }}/tech-red-qa" >> $GITHUB_ENV
     
     - name: Install Project
       run: |
@@ -34,4 +34,4 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ github.workspace }}/tests
-        pytest labs/test_foo.py
+        pytest tech_red_qa_tests/labs/test_foo.py
