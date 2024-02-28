@@ -72,9 +72,26 @@ Si deseas hacer que la configuración sea persistente y se aplique cada vez que 
    echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.zshrc
    ```
 
+## Impresión del proyecto
+```sh
+tech-red-qa/
+│
+├── src/
+│   └── labs/
+│       └── my_code.py
+│ 
+└── tests/
+   └── labs/
+      └── test_foo.py
+```
+
 ## Paso 7: Ejecución de los tests
 Ejecuta tus pruebas desde el terminal de Visual Studio Code. Puedes usar el siguiente comando:
 ```sh
 pytest tests/
 ```
 <img width="1026" alt="pytest_test" src="https://github.com/PlatformUnityCI/cross-quality-ci/assets/9554315/4568e2a9-a390-48cf-83ca-a3d87c2bb8cf">
+
+## Instalar Github extension
+
+<img width="376" alt="Captura de pantalla 2024-02-28 a la(s) 08 47 28" src="https://github.com/PlatformUnityCI/tech-red-qa/assets/87529848/c21a9bea-1e25-45ff-81e3-8d782312f00f">
