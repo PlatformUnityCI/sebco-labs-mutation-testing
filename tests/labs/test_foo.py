@@ -1,4 +1,4 @@
-from src.my_code import foo
+from src.labs.my_code import foo
 import logging
 
 def test_foo():
