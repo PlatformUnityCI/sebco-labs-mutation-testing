@@ -24,9 +24,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Configure Python Path
+      run: |
+        echo "::set-env name=PYTHONPATH::${{ github.workspace }}/src"
+
     - name: Run tests
       run: |
         cd ${{ github.workspace }}/tests
-          PYTHONPATH=${{ github.workspace }}/src pytest labs/test_foo.py
-        env:
-          PYTHONPATH: ${{ github.workspace }}/src
+        pytest labs/test_foo.py
