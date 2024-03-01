@@ -1,8 +1,10 @@
 # TECH READ QA TEAM
 
-Esta es una guía básica para configurar un proyecto Python con Visual Studio Code, Pytest, y asegurándonos de que sea compatible con macOS y Windows.
+Esta es una guía básica para configurar un proyecto [Python](https://www.python.org/)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/python.svg" alt="Windows" width="20" height="20"> con Visual Studio Code, usando Pytest para correr los test.
 
-## Paso 1: Clonar el Repositorio
+La orientación de esta guía se centra en garantizar su compatibilidad con los sistemas operativos [macOS](https://es.wikipedia.org/wiki/MacOS)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/apple.svg" alt="Windows" width="20" height="20"> & [Windows](https://es.wikipedia.org/wiki/Microsoft_Windows)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/windows.svg" alt="Windows" width="20" height="20">
+
+## Paso 1: Clonar el Repositorio desde [Github](https://github.com/PlatformUnityCI/tech-red-qa.git)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/github.svg" alt="Windows" width="20" height="20">
 
 Clona tu repositorio desde GitHub a tu máquina local utilizando el siguiente comando en tu terminal:
 
@@ -10,7 +12,7 @@ Clona tu repositorio desde GitHub a tu máquina local utilizando el siguiente co
 git clone https://github.com/tu_usuario/tu_proyecto.git
 ```
 
-## Paso 2: Abrir el Proyecto en Visual Studio Code
+## Paso 2: Abrir el Proyecto en [Visual Studio Code](https://code.visualstudio.com/)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/visual-studio-code.svg" alt="Windows" width="20" height="20">
 Abre Visual Studio Code y selecciona "File" > "Open Folder". Navega hasta la carpeta de tu proyecto y ábrela.
 
 ## Paso 3: Configurar el Entorno Virtual (Recomendado)
