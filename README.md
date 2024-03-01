@@ -1,10 +1,25 @@
 # TECH READ QA TEAM
 
-Esta es una guía básica para configurar un proyecto [Python](https://www.python.org/)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/python.svg" alt="Windows" width="20" height="20"> con Visual Studio Code, usando Pytest para correr los test.
+Esta guía se enfoca en asegurar la compatibilidad con los sistemas operativos [macOS](https://es.wikipedia.org/wiki/MacOS)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/apple.svg" alt="MacOS" width="15" height="25"> & [Windows](https://es.wikipedia.org/wiki/Microsoft_Windows)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/windows.svg" alt="Windows" width="15" height="25"> al configurar un proyecto [Python](https://www.python.org/)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/python.svg" alt="Python" width="15" height="25"> con Visual Studio Code, utilizando Pytest para la ejecución de pruebas.
 
-La orientación de esta guía se centra en garantizar su compatibilidad con los sistemas operativos [macOS](https://es.wikipedia.org/wiki/MacOS)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/apple.svg" alt="Windows" width="20" height="20"> & [Windows](https://es.wikipedia.org/wiki/Microsoft_Windows)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/windows.svg" alt="Windows" width="20" height="20">
+Es imperativo que Python esté instalado y configurado correctamente en el sistema operativo de elección antes de seguir con la configuración del proyecto.
+* __Windows__: En el caso de Windows, es recomendable seleccionar la opción 'Add Python to PATH' durante la instalación para integrar Python en el PATH del sistema, lo que facilitará el acceso y la gestión de módulos y paquetes en nuestros proyectos.
+* __macOS__: Para agregar el directorio de la raíz del proyecto a la variable de entorno PYTHONPATH debemos:
+   - Abrir la terminal de Visual Studio Code y ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH: 
+      - (__Zsh__) ```export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa"```.
+      - (__Bash__) ```export PYTHONPATH=E:..ruta local de tu proyecto/tech-red-qa```.
+      - (__Command Prompt__) ```set PYTHONPATH=..ruta local de tu proyecto\tech-red-qa```
+      - (__Power Shell__) ```$env:PYTHONPATH = "..ruta local de tu proyecto\tech-red-qa"```
 
-## Paso 1: Clonar el Repositorio desde [Github](https://github.com/PlatformUnityCI/tech-red-qa.git)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/github.svg" alt="Windows" width="20" height="20">
+   * <span style="color: #ff0000; font-size: 18px;">&#9888;</span> Ten en cuenta que la configuración de `PYTHONPATH` que estableces con el comando export `PYTHONPATH=...` en la terminal de Visual Studio Code es efectiva solo para la sesión actual de la terminal. Esto significa que la configuración se perderá una vez que cierres la terminal o reinicies tu sistema. Si deseas hacer que la configuración sea persistente y se aplique cada vez que abres una nueva terminal o reinicias tu sistema, puedes agregar el comando a un archivo de inicio de shell, como el archivo .bashrc o .zshrc según el shell que estés utilizando.
+
+      ### Bash (.bashrc):
+         Abre o crea el archivo .bashrc en tu directorio de inicio y agrega la línea al final del archivo: ```echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.bashrc```
+
+      ### Zsh (.zshrc):
+         Si estás utilizando Zsh, realiza un paso similar en el archivo .zshrc: ```echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.zshrc```
+
+## Paso 1: Clonar el Repositorio desde [Github](https://github.com/PlatformUnityCI/tech-red-qa.git)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/github.svg" alt="Github" width="15" height="25">
 
 Clona tu repositorio desde GitHub a tu máquina local utilizando el siguiente comando en tu terminal:
 
@@ -12,29 +27,18 @@ Clona tu repositorio desde GitHub a tu máquina local utilizando el siguiente co
 git clone https://github.com/tu_usuario/tu_proyecto.git
 ```
 
-## Paso 2: Abrir el Proyecto en [Visual Studio Code](https://code.visualstudio.com/)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/visual-studio-code.svg" alt="Windows" width="20" height="20">
+## Paso 2: Abrir el Proyecto en Visual Studio Code
 Abre Visual Studio Code y selecciona "File" > "Open Folder". Navega hasta la carpeta de tu proyecto y ábrela.
 
 ## Paso 3: Configurar el Entorno Virtual (Recomendado)
-Es una buena práctica utilizar entornos virtuales para cada proyecto. Abre la terminal en Visual Studio Code e ingresa los siguientes comandos:
-
-```sh
-cd tech-red-qa
-python3 -m venv venv
-```
+Es una buena práctica utilizar entornos virtuales para cada proyecto. Abre la terminal en Visual Studio Code e ingresa los siguiente comando:```python -m venv venv```
 
 Luego, activa el entorno virtual:
 
-En macOS/Linux:
-
-```sh
-source venv/bin/activate
-```
-
-En Windows:
-```sh
-venv\Scripts\activate
-```
+   - (__Zsh__) ```source venv/bin/activate```
+   - (__Bash__) ```. venv/Scripts/activate```
+   - (__Command Prompt__) ```venv/Scripts/activate```
+   - (__Power Shell__) ```.\venv\Scripts\Activate```
 
 ## Paso 4: Instalar Dependencias
 Instala las dependencias necesarias, como pytest, usando pip:
@@ -48,46 +52,7 @@ pip install -r requirements.txt
 2. Abre el menú "View" > "Command Palette" (o presiona Cmd + Shift + P en macOS o Ctrl + Shift + P en Windows/Linux) y escribe "Python: Select Interpreter".
 3. Selecciona el intérprete Python del entorno virtual que creaste en el paso 3 (tu_proyecto/venv/bin/python en macOS o tu_proyecto\venv\Scripts\python.exe en Windows).
 
-## Paso 6: Configurar la raíz del proyecto
-Debemos agregar el directorio de la raíz del proyecto a la variable de entorno PYTHONPATH.
-
-Añade el directorio raíz del proyecto a PYTHONPATH:
-- Abre la terminal de Visual Studio Code.
-- Ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH:
-
-```sh
-export PYTHONPATH= "..ruta local de tu proyecto/tech-red-qa"
-```
-*IMPORTANTE: Ten en cuenta que la configuración de `PYTHONPATH` que estableces con el comando export `PYTHONPATH=...` en la terminal de Visual Studio Code es efectiva solo para la sesión actual de la terminal. Esto significa que la configuración se perderá una vez que cierres la terminal o reinicies tu sistema.*
-
-Si deseas hacer que la configuración sea persistente y se aplique cada vez que abres una nueva terminal o reinicias tu sistema, puedes agregar el comando a un archivo de inicio de shell, como el archivo .bashrc o .zshrc según el shell que estés utilizando.
-
-### Bash (.bashrc):
-   Abre o crea el archivo .bashrc en tu directorio de inicio y agrega la línea al final del archivo:
-   ```sh
-   echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.bashrc
-   ```
-
-### Zsh (.zshrc):
-   Si estás utilizando Zsh, realiza un paso similar en el archivo .zshrc:
-   ```sh
-   echo 'export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa' >> ~/.zshrc
-   ```
-
-## Impresión del proyecto
-```sh
-tech-red-qa/
-│
-├── src/
-│   └── labs/
-│       └── my_code.py
-│ 
-└── tests/
-   └── labs/
-      └── test_foo.py
-```
-
-## Paso 7: Ejecución de los tests
+## Paso 6: Ejecución de los tests
 Ejecuta tus pruebas desde el terminal de Visual Studio Code. Puedes usar el siguiente comando:
 ```sh
 pytest tests/
