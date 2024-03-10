@@ -7,7 +7,7 @@ Es imperativo que Python esté instalado y configurado correctamente en el siste
 * __macOS__: Para agregar el directorio de la raíz del proyecto a la variable de entorno PYTHONPATH debemos:
    - Abrir la terminal de Visual Studio Code y ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH: 
       - (__Zsh__) ```export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa"```.
-      - (__Bash__) ```export PYTHONPATH=E:..ruta local de tu proyecto/tech-red-qa```.
+      - (__Bash__) ```export PYTHONPATH=:..ruta local de tu proyecto/tech-red-qa```.
       - (__Command Prompt__) ```set PYTHONPATH=..ruta local de tu proyecto\tech-red-qa```
       - (__Power Shell__) ```$env:PYTHONPATH = "..ruta local de tu proyecto\tech-red-qa"```
 
