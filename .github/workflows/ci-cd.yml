@@ -39,5 +39,5 @@ jobs:
       # Paso 6: Ejecutar las pruebas con Pytest
       - name: Run tests
         run: |
-          cd ${{ github.workspace }}/labs/tests
-          pytest
+          cd ${{ github.workspace }}
+          pytest tech-red-qa/labs/tests
