@@ -29,7 +29,7 @@ jobs:
 
       # Paso 4: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
-        run: echo "PYTHONPATH=${{ github.workspace }}/tech-red-qa" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       # Paso 5: Instalar el proyecto
       - name: Install Project
@@ -39,5 +39,5 @@ jobs:
       # Paso 6: Ejecutar las pruebas con Pytest
       - name: Run tests
         run: |
-          cd ${{ github.workspace }}/tech-red-qa/labs/tests
+          cd ${{ github.workspace }}/labs/tests
           pytest
