@@ -27,6 +27,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Debug environment
+      - name: Debug environment
+        run: |
+          echo "Shell type: $SHELL"
+          echo "Bash version: $(bash --version)"
+          echo "Python version: $(python --version)"
+
       # Paso 4: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
@@ -39,5 +46,5 @@ jobs:
       # Paso 6: Ejecutar las pruebas con Pytest
       - name: Run tests
         run: |
-          cd ${{ github.workspace }}/labs/tests
+          cd ${{ github.workspace }}/tech-red-qa/labs/tests
           pytest
