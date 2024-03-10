@@ -31,7 +31,9 @@ git clone https://github.com/tu_usuario/tu_proyecto.git
 Abre Visual Studio Code y selecciona "File" > "Open Folder". Navega hasta la carpeta de tu proyecto y ábrela.
 
 ## Paso 3: Configurar el Entorno Virtual (Recomendado)
-Es una buena práctica utilizar entornos virtuales para cada proyecto. Abre la terminal en Visual Studio Code e ingresa los siguiente comando:```python -m venv venv```
+Es una buena práctica utilizar entornos virtuales para cada proyecto. Abre la terminal en Visual Studio Code e ingresa los siguiente comando:
+
+```python -m venv venv```
 
 Luego, activa el entorno virtual:
 
@@ -49,13 +51,13 @@ pip install -r requirements.txt
 
 ## Paso 5: Configurar el Interprete de Python en Visual Studio Code
 1. Abre la pestaña de Extensions en la barra lateral (icono de paquete cuadrado) y busca e instala la extensión "Python" de Microsoft.
-2. Abre el menú "View" > "Command Palette" (o presiona Cmd + Shift + P en macOS o Ctrl + Shift + P en Windows/Linux) y escribe "Python: Select Interpreter".
+2. Abre el menú "View" > "Command Palette" (o presiona `Cmd + Shift + P` en macOS o `Ctrl + Shift + P` en Windows/Linux) y escribe "Python: Select Interpreter".
 3. Selecciona el intérprete Python del entorno virtual que creaste en el paso 3 (tu_proyecto/venv/bin/python en macOS o tu_proyecto\venv\Scripts\python.exe en Windows).
 
 ## Paso 6: Ejecución de los tests
 Ejecuta tus pruebas desde el terminal de Visual Studio Code. Puedes usar el siguiente comando:
 ```sh
-pytest tests/
+pytest tech_red_qa/labs/tests/test_foo.py
 ```
 <img width="1026" alt="pytest_test" src="https://github.com/PlatformUnityCI/cross-quality-ci/assets/9554315/4568e2a9-a390-48cf-83ca-a3d87c2bb8cf">
 
