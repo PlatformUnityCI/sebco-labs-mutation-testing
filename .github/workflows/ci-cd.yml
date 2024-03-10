@@ -40,4 +40,4 @@ jobs:
       - name: Run tests
         run: |
           cd ${{ github.workspace }}/labs/tests
-          pytest tech_red_qa/labs/tests/test_foo.py
+          pytest
