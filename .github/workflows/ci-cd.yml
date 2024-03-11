@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - tech-red-qa-arch-refactor
+      - tech-red-qa-artifacts
 
 jobs:
   build:
