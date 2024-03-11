@@ -1,4 +1,4 @@
-from tech_red_qa.labs.my_code import foo
+from tech_red_qa.source.labs.my_code import foo
 import logging
 
 def test_foo():
