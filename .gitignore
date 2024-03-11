@@ -5,7 +5,5 @@
 .vscode/
 .pytest_cache/
 venv/
-
-tech_red_qa/__pycache__/*
-tech_red_qa/labs/__pycache__/*
-tests/tech_red_qa_tests/labs/__pycache__/*
+tech_red_qa.egg-info/
+__pycache__/

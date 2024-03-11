@@ -75,7 +75,7 @@ jobs:
       - name: Run tests
         run: |
           cd ${{ github.workspace }}/tests
-          pytest tech_red_qa_tests/labs/test_foo.py
+          pytest labs/test_foo.py
 
 ```
 
