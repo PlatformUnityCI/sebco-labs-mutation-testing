@@ -5,4 +5,4 @@ def test_foo():
     result = foo()
     print("Resultado de foo:", result)
     assert result == "¡Hola, mundo!", "la prueba no salió exitosa"
-    logging.info("la prueba salió exitosa")
+    logging.info("la prueba salió exitosa") 
