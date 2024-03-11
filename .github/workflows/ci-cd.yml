@@ -41,3 +41,10 @@ jobs:
         run: |
           cd ${{ github.workspace }}/tests
           pytest
+      
+      - name: Generating html report artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: regression-test-report
+          path: tests/report
