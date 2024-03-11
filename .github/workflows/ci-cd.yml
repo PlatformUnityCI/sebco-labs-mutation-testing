@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - tech-red-qa-github-action
+      - main-test
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: 3.X
           architecture: 'x64'
-          
+
 
       # Paso 3: Instalar las dependencias
       - name: Install dependencies
