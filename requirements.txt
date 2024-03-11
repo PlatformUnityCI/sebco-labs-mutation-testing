@@ -1,3 +1,4 @@
 pytest
+pytest-html
 
 # Agrega otras dependencias según sea necesario
