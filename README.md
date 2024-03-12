@@ -15,6 +15,6 @@ Es imperativo que Python esté instalado y configurado correctamente en el siste
 
 
 # GUIA STEP-BY-STEP
-- &rarr;[Main Setup](URL)
-- &rarr;[Configurar un flujo CI/CD con GitHub Actions para tu proyecto](URL)
-- &rarr;[Configurar un reporte HTML local y remoto](URL)
+- &rarr;[Main Setup](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/1.%20Main%20setup.md)
+- &rarr;[Configurar un flujo CI/CD con GitHub Actions para tu proyecto](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/2.%20Github_Action.md)
+- &rarr;[Configurar un reporte HTML local y remoto](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/3.%20SetupArtifactHTMLReport.md)
