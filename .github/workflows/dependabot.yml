@@ -3,9 +3,9 @@ name: Dependabot
 on:
   workflow_dispatch:
   push:
-    branches: ["tech-red-qa-artifacts"]
+    branches: ["main"]
   pull_request:
-    branches: ["tech-red-qa-artifacts"]
+    branches: ["main"]
     types: [opened, synchronize, reopened]
 
 jobs:
