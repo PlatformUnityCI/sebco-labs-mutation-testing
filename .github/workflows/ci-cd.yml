@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - tech-red-qa-arch-refactor
+      - tech-red-qa-artifacts
 
 jobs:
   build:
@@ -41,3 +41,10 @@ jobs:
         run: |
           cd ${{ github.workspace }}/tests
           pytest
+      
+      - name: Generating html report artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: tests/report
