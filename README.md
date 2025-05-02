@@ -4,6 +4,9 @@ Esta guía se enfoca en asegurar la compatibilidad con los sistemas operativos [
 
 Es imperativo que Python esté instalado y configurado correctamente en el sistema operativo de elección antes de seguir con la configuración del proyecto.
 * __Windows__: En el caso de Windows, es recomendable seleccionar la opción 'Add Python to PATH' durante la instalación para integrar Python en el PATH del sistema, lo que facilitará el acceso y la gestión de módulos y paquetes en nuestros proyectos.
+   *  <span style="color: #ff0000; font-size: 18px;">&#9888;</span> Paso Previo: Validación de Versiones de winget y git:
+      - Antes de comenzar con la ejecución de los tests, es necesario asegurarse de que las versiones de winget y git estén actualizadas en tu sistema. Para facilitar este proceso, hemos incluido un archivo .bat ```actualizar_winget_y_git.bat``` que se puede ejecutar desde la terminal de tu sistema operativo. También este archivo se encuentra en la ruta documentacion de este repositorio y se encarga de verificar y actualizar automáticamente ambas herramientas en un solo paso.
+
 * __macOS__: Para agregar el directorio de la raíz del proyecto a la variable de entorno PYTHONPATH debemos:
    - Abrir la terminal de Visual Studio Code y ejecuta el siguiente comando para agregar el directorio raíz del proyecto a la variable de entorno PYTHONPATH: 
       - (__Zsh__) ```export PYTHONPATH=..ruta local de tu proyecto/tech-red-qa"```.
@@ -16,5 +19,6 @@ Es imperativo que Python esté instalado y configurado correctamente en el siste
 
 # GUIA STEP-BY-STEP
 - &rarr;[Main Setup](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/1.%20Main%20setup.md)
-- &rarr;[Configurar un flujo CI/CD con GitHub Actions para tu proyecto](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/2.%20Github_Action.md)
-- &rarr;[Configurar un reporte HTML local y remoto](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/3.%20SetupArtifactHTMLReport.md)
+- &rarr;[Configurar GitBash en Visual Studio Code 1.40+](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/2.%20Configurar-git-bash-vscode.md)
+- &rarr;[Configurar un flujo CI/CD con GitHub Actions para tu proyecto](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/3.%20Github_Action.md)
+- &rarr;[Configurar un reporte HTML local y remoto](https://github.com/PlatformUnityCI/tech-red-qa/blob/tech-red-qa-artifacts/doc/4.%20SetupArtifactHTMLReport.md)
