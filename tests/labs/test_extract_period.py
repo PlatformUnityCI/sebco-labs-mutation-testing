@@ -1,18 +1,21 @@
-from source.utils.datetime.get_periods import GetPeriod
-from source.utils.datetime.schedule_date import ScheduleDate
+import pytest
+import json
+import lib_core.time_utils
+from lib_core.time_utils.get_periods import response_json
+from lib_core.time_utils.schedule_time import ScheduleDate
 
 @pytest.mark.regression
 class TestExtractPeriods:
     def setup_method(self):
         self.new_formatted_date = ScheduleDate.get_customized_date(number_of_days=0)
         
-    def test_qa_arg_available_months_service_filtered_by_ars_currency(self, debit_api_services, set_token_attribute_according_arg_user):
+    def test_qa_reports(self):
         """
         Valida que, con el filtro vacío, el request solamente traiga
         datos del usuario ERA.
         """
-        response = # Falta acá obtener el json de response_json
-        response_data = const.json.dumps(response, indent=4)
+        response = response_json
+        response_data = json.dumps(response, indent=4)
         print(response_data)
 
         account_created = (response["accountCreatedDate"]).replace("Z", "")

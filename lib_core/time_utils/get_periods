@@ -3,7 +3,7 @@ from dateutil.relativedelta import relativedelta
 
 # 👇 Este es el JSON de ejemplo, podrías pasarlo como fixture o parámetro si querés más flexibilidad.
 response_json = {
-    "AccountCreatedDate": "2024-11-27T13:36:44.071022997Z",
+    "accountCreatedDate": "2024-11-27T13:36:44.071022997Z",
     "periodList": [
         {
             "month": "3",
