@@ -9,3 +9,4 @@ tech_red_qa.egg-info/
 __pycache__/
 report/
 .idea/
+.venv/

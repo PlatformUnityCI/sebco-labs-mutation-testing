@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 # 👇 Este es el JSON de ejemplo, podrías pasarlo como fixture o parámetro si querés más flexibilidad.
@@ -54,30 +54,33 @@ REVERSE_MONTHS = {
 class GetPeriod:
     def __init__(self):
         pass
-    
+
     @staticmethod
     def get_expected_periods(account_created, today_str):
         """
-        :param account_created: Trae el valor del AccountCreatedDate de la respuesta del servicio
-        :param today: Trae el valor de la fecha de hoy
-        :return: La lista esperada de períodos desde la fecha de creación hasta el mes anterior en caso de que la fecha actual sea mayor al 5 de cada mes
+        :param account_created: Fecha de creación de la cuenta (formato ISO 8601 con hora)
+        :param today_str: Fecha actual en formato YYYY-MM-DD
+        :return: Lista de períodos mensuales esperados, desde la creación hasta el último período válido
         """
-        print(today_str.strip())
-        is_after_fifth = int(today_str.strip().split("-")[2]) >= 5
-        today = datetime.strptime(today_str, "%Y-%m-%d")
+        # Convertir strings a objetos date
+        today = datetime.fromisoformat(today_str).date()
+        account_created_date = datetime.fromisoformat(account_created.split("T")[0]).date()
 
-        end_month = today.replace(day=1) if is_after_fifth else today.replace(day=1) - relativedelta(months=1)
+        # Evaluar si se debe incluir el mes pasado o el antepenúltimo
+        is_after_fifth = today.day >= 5
+        end_month = today.replace(day=1) if is_after_fifth else (today.replace(day=1) - relativedelta(months=1))
 
-        start_month = account_created.replace(day=1)
-        months = []
+        start_month = account_created_date.replace(day=1)
+
+        periods = []
         current = end_month - relativedelta(months=1)
 
         while current >= start_month:
-            months.append({
+            periods.append({
                 "month": str(current.month),
                 "year": str(current.year),
                 "title": f"{REVERSE_MONTHS[current.month]} Reporte"
             })
             current -= relativedelta(months=1)
 
-        return months[:12] # Max 12 meses
+        return periods

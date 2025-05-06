@@ -4,7 +4,7 @@ Archivo .py con funciones que permiten dar formato a fechas
 import datetime
 from datetime import timezone
 
-def generate_time_aws():
+def generate_time():
     """
     Método que devuelve una string con la hora actual (UTC) en formato utilizado para DynamoDB (AWS)
 
