@@ -1,39 +1,35 @@
 import datetime
+import logging
 
 import pytest
 import json
 from lib_core.time_utils.get_periods import GetPeriod
 from lib_core.time_utils.get_periods import response_json
-from lib_core.time_utils.schedule_time import ScheduleDate
+from lib_core.time_utils.date_utils import generate_time
 
 @pytest.mark.regression
 class TestExtractPeriods:
     def setup_method(self):
-        self.new_formatted_date = ScheduleDate.get_customized_date(number_of_days=0)
+        self.today = generate_time().split('T')[0]
 
     def test_qa_reports(self):
         """
         Valida que, con el filtro vacío, el request solamente traiga
         datos del usuario ERA.
         """
-        response = response_json
-        print("actual_periods")
-        print(json.dumps(response["periodList"], indent=4))
+        response = response_json # Acá va el servicio
+        logging.info(json.dumps(response["periodList"], indent=4))
 
-        account_created = (response["accountCreatedDate"]).replace("Z", "")
-        today = self.new_formatted_date
-
-        expected_periods = GetPeriod.get_expected_periods(account_created, today)
         actual_periods = response["periodList"]  # lista de dicts
-
-        print("expected_periods")
-        print(json.dumps(expected_periods, indent=4))
+        account_created_str = (response["accountCreatedDate"]).replace("Z", "")
 
         # Convertir a objetos datetime.date
-        account_created = datetime.datetime.fromisoformat(account_created.split("T")[0]).date()
-        today = datetime.datetime.fromisoformat(today).date()
+        account_created = datetime.datetime.fromisoformat(account_created_str.split("T")[0]).date()
+        today = datetime.datetime.fromisoformat(self.today).date()
 
-        #Validar cantidad esperada de reportes según si la feha de creación es mayor a 1 año entonces debe mostrar 12 reportes
+        expected_periods = GetPeriod.get_expected_periods(account_created=account_created, today=today)
+
+        #Validar cantidad esperada de reportes según si la fecha de creación es mayor a 1 año entonces debe mostrar 12 reportes
         if (today - account_created).days > 365:
             assert len(actual_periods) == 12, f"Se esperaban 12 reportes, pero se encontraron {len(actual_periods)}"
         else:

@@ -1,10 +1,14 @@
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 # 👇 Este es el JSON de ejemplo, podrías pasarlo como fixture o parámetro si querés más flexibilidad.
 response_json = {
     "accountCreatedDate": "2024-11-27T13:36:44.071022997Z",
     "periodList": [
+        {
+            "month": "4",
+            "year": "2025",
+            "title": "Abril Reporte"
+        },
         {
             "month": "3",
             "year": "2025",
@@ -56,21 +60,18 @@ class GetPeriod:
         pass
 
     @staticmethod
-    def get_expected_periods(account_created, today_str):
+    def get_expected_periods(account_created, today):
         """
         :param account_created: Fecha de creación de la cuenta (formato ISO 8601 con hora)
         :param today_str: Fecha actual en formato YYYY-MM-DD
         :return: Lista de períodos mensuales esperados, desde la creación hasta el último período válido
         """
-        # Convertir strings a objetos date
-        today = datetime.fromisoformat(today_str).date()
-        account_created_date = datetime.fromisoformat(account_created.split("T")[0]).date()
 
         # Evaluar si se debe incluir el mes pasado o el antepenúltimo
         is_after_fifth = today.day >= 5
         end_month = today.replace(day=1) if is_after_fifth else (today.replace(day=1) - relativedelta(months=1))
 
-        start_month = account_created_date.replace(day=1)
+        start_month = account_created.replace(day=1)
 
         periods = []
         current = end_month - relativedelta(months=1)
