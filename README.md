@@ -24,6 +24,7 @@ Es imperativo que Python esté instalado y configurado correctamente en el siste
 y luego hacer
 ```pip install -r requirements.txt```
 
+- setear la ariable de entorno ```PYTHONPATH``` con el path raíz del proyecto desde donde se ejecuta pytest.
 - &rarr;[Configurar GitBash en Visual Studio Code 1.40+](https://github.com/SebasCouto/tech-red-qa/blob/main/doc/2.%20Configurar-git-bash-vscode.md)
 - &rarr;[Configurar un flujo CI/CD con GitHub Actions para tu proyecto](https://github.com/SebasCouto/tech-red-qa/blob/main/doc/3.%20Github_Action.mdd)
 - &rarr;[Configurar un reporte HTML local y remoto](https://github.com/SebasCouto/tech-red-qa/blob/main/doc/4.%20SetupArtifactHTMLReport.md)
