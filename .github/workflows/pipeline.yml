@@ -39,6 +39,7 @@ jobs:
       # Paso 3: Clonar el repositorio según el tipo de evento
       - name: Checkout QA tests
         run: |
+          rm -rf tests
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             git clone -b ${{ inputs.branch }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" tests
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
