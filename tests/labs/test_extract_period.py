@@ -1,10 +1,8 @@
 import datetime
 import logging
-
 import pytest
 import json
-from lib_core.time_utils.get_periods import GetPeriod
-from lib_core.time_utils.get_periods import response_json
+from lib_core.time_utils.get_periods import *
 from lib_core.time_utils.date_utils import generate_time
 
 @pytest.mark.regression
