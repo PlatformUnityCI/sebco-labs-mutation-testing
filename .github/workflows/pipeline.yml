@@ -25,16 +25,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Obtener el contenido del repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Paso 2: Mostrar información útil para depuración
+      # Paso 1: Mostrar información útil para depuración
       - name: Debug info
         run: |
           echo "GitHub event: ${{ github.event_name }}"
           echo "Head ref: ${{ github.head_ref }}"
           echo "Base ref: ${{ github.base_ref }}"
+
+      # Paso 2: SSH Key privada desde los secrets en el archivo id_rsa
+      - name: Setup Github SSH key
+        run: |
+          mkdir -p "$HOME/.ssh"
+          tr -d '\r' <<< "${{ secrets.GLOBAL_SSH_KEY }}" > "$HOME/.ssh/id_rsa"
+          chmod 600 "$HOME/.ssh/id_rsa"
+          ssh-keyscan -H 'github.com' >> "$HOME/.ssh/known_hosts"
 
       # Paso 3: Clonar el repositorio según el tipo de evento
       - name: Checkout QA tests
