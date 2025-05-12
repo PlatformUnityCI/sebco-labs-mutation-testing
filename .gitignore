@@ -4,8 +4,9 @@
 # Ignorar directorios
 .vscode/
 .pytest_cache/
-.venv/
-.idea/
+venv/
 tech_red_qa.egg-info/
 __pycache__/
 report/
+.idea/
+.venv/
