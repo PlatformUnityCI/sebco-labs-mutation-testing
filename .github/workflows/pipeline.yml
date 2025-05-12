@@ -31,15 +31,15 @@ jobs:
           python-version: 3.X
           architecture: 'x64'
 
-      # Paso 3:
+      # Paso 3: Configuración de la caché de Python
       - name: Cache Python requirements
         uses: actions/cache@v3
         with:
           path: venv # Caché del entorno virtual
-        key: ${{ runner.os }}}-python-${{ hasFiles('./tests/requirements.txt') }}
+        key: ${{ runner.os }}-python-${{ hashFiles('./tests/requirements.txt') }}
 
       # Paso 4: Pip update and venv activation
-      - name: Install dependencies
+      - name: Set up and install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
@@ -47,15 +47,14 @@ jobs:
           pip install -r requirements.txt
         working-directory: tests
 
-      # Paso 5: Configurar la variable de entorno PythonPath
-      - name: Configure Python Path
-        run: echo "PYTHONPATH=${{ github.workspace }}/lib_core" >> $GITHUB_ENV
-
-      # Paso 6: Instalar el proyecto
+      # Paso 5: Instalar el proyecto
       - name: Install Project
         run: |
-          source venv/bin/activate
-          python -m pip install -e .
+          venv/bin/python -m pip install -e .
+
+      # Paso 6: Configurar la variable de entorno PythonPath
+      - name: Configure Python Path
+        run: echo "PYTHONPATH=${{ github.workspace }}/lib_core" >> $GITHUB_ENV
 
       # Paso 7: Ejecutar las pruebas con Pytest
       - name: Run tests
@@ -63,13 +62,14 @@ jobs:
         run: |
           source venv/bin/activate
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            pytest -m ${{ inputs.pytest_mark }}
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            pytest -m regression
+            venv/bin/pytest -m ${{ inputs.pytest_mark }}
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            venv/bin/pytest -m regression
         working-directory: tests
         env:
           PYTEST_ADDOPTS: "--color=yes"
-      
+
+      # Paso 8: Subir reporte
       - name: Generating html report artifact
         if: always()
         uses: actions/upload-artifact@v4 # Update to the latest stable version
