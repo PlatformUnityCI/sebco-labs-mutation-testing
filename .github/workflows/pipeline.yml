@@ -1,9 +1,19 @@
-name: CI/CD Pipeline
+name: Pipeline
 
 on:
   push:
     branches:
-      - tech-red-qa-artifacts
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'QA repo name'
+        default: main
+        required: true
+      pytest_mark:
+        description: 'QA mark to run tests'
+        default: regression
+        required: true
 
 jobs:
   build:
