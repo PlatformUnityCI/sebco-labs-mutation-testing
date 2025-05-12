@@ -41,31 +41,27 @@ jobs:
       # Paso 4: Pip update and venv activation
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           python -m venv venv
           source venv/bin/activate
-        working-directory: tests
-
-      # Paso 5: Instalar dependencias
-      - name: Install dependecies & requirements
-        run:
+          pip install --upgrade pip
           pip install -r requirements.txt
         working-directory: tests
 
-      # Paso 4: Configurar la variable de entorno PythonPath
+      # Paso 5: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
         run: echo "PYTHONPATH=${{ github.workspace }}/lib_core" >> $GITHUB_ENV
 
-      # Paso 5: Instalar el proyecto
+      # Paso 6: Instalar el proyecto
       - name: Install Project
         run: |
+          source venv/bin/activate
           python -m pip install -e .
 
-      # Paso 6: Ejecutar las pruebas con Pytest
+      # Paso 7: Ejecutar las pruebas con Pytest
       - name: Run tests
         timeout-minutes: 20
         run: |
-          source venv/bin/activate # Activar entorno virtual
+          source venv/bin/activate
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             pytest -m ${{ inputs.pytest_mark }}
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
