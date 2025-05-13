@@ -36,9 +36,9 @@ jobs:
       - name: Setup Github SSH key
         run: |
           mkdir -p "$HOME/.ssh"
-          tr -d '\r' <<< "${{ secrets.SSH_GLOBAL_KEY }}" > "$HOME/.ssh/id_rsa"
+          echo "${{ secrets.SSH_GLOBAL_KEY }}" | tr -d '\r' > "$HOME/.ssh/id_rsa"
           chmod 600 "$HOME/.ssh/id_rsa"
-          ssh-keyscan -H 'github.com' >> "$HOME/.ssh/known_hosts"
+          ssh-keyscan -H github.com >> "$HOME/.ssh/known_hosts"
 
       # Paso 3: Clonar el repositorio según el tipo de evento
       - name: Checkout QA tests
