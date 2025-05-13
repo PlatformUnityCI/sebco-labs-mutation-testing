@@ -84,7 +84,8 @@ jobs:
 
       # Paso 8: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
-        run: echo "PYTHONPATH=${{ github.workspace }}/qa-tests/lib_core" >> $GITHUB_ENV
+        run: |
+          echo "PYTHONPATH=${{ github.workspace }}/qa-tests/lib_core" >> $GITHUB_ENV
 
       # Paso 9: Ejecutar las pruebas con Pytest
       - name: Run tests
