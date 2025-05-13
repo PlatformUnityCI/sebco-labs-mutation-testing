@@ -86,11 +86,10 @@ jobs:
       - name: Run tests
         timeout-minutes: 20
         run: |
-          source venv/bin/activate
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            venv/bin/pytest -m ${{ inputs.pytest_mark }}
+            pytest -m ${{ inputs.pytest_mark }}
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            venv/bin/pytest -m regression
+            pytest -m regression
         working-directory: tests
         env:
           PYTEST_ADDOPTS: "--color=yes"
