@@ -36,7 +36,7 @@ jobs:
       - name: Setup Github SSH key
         run: |
           mkdir -p "$HOME/.ssh"
-          tr -d '\r' <<< "${{ secrets.GLOBAL_SSH_KEY }}" > "$HOME/.ssh/id_rsa"
+          tr -d '\r' <<< "${{ secrets.SSH_GLOBAL_KEY }}" > "$HOME/.ssh/id_rsa"
           chmod 600 "$HOME/.ssh/id_rsa"
           ssh-keyscan -H 'github.com' >> "$HOME/.ssh/known_hosts"
 
