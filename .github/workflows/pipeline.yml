@@ -52,6 +52,8 @@ jobs:
             git clone -b main "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             git clone -b ${{ github.head_ref }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            git clone -b main "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
           else
             echo "Event not supported"
           fi
