@@ -90,6 +90,7 @@ jobs:
             pytest -m ${{ inputs.pytest_mark }}
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             pytest -m regression
+          fi
         working-directory: tests
         env:
           PYTEST_ADDOPTS: "--color=yes"
