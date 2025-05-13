@@ -85,7 +85,7 @@ jobs:
       # Paso 8: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
         run: |
-          echo "PYTHONPATH=${{ github.workspace }}/qa-tests/lib_core" >> $GITHUB_ENV
+          echo "PYTHONPATH=${{ github.workspace }}/qa-tests" >> $GITHUB_ENV
 
       # Paso 9: Ejecutar las pruebas con Pytest
       - name: Run tests
@@ -95,6 +95,8 @@ jobs:
             pytest -m ${{ inputs.pytest_mark }}
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             pytest -m regression
+          else
+            echo "Event not supported"
           fi
         working-directory: qa-tests
         env:
