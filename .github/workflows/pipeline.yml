@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [ "main" ]
+    types: [ opened, synchronize, reopened ]
+  schedule:
+    - cron: '15 17 * * 2'  # Martes a las 14:15 hora Argentina
   workflow_dispatch:
     inputs:
       branch:
@@ -15,65 +20,97 @@ on:
         default: regression
         required: true
 
+env:
+  QA_REPO: "tech-red-qa"
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Obtener el contenido del repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Paso 1: Mostrar información útil para depuración
+      - name: Debug info
+        run: |
+          echo "GitHub event: ${{ github.event_name }}"
+          echo "Head ref: ${{ github.head_ref }}"
+          echo "Base ref: ${{ github.base_ref }}"
 
-      # Paso 2: Configurar Python
+      # Paso 2: SSH Key privada desde los secrets en el archivo id_rsa
+      - name: Setup Github SSH key
+        run: |
+          mkdir -p "$HOME/.ssh"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > "$HOME/.ssh/id_rsa"
+          chmod 600 "$HOME/.ssh/id_rsa"
+          ssh-keyscan -H github.com >> "$HOME/.ssh/known_hosts"
+
+      # Paso 3: Clonar el repositorio según el tipo de evento
+      - name: Checkout QA tests
+        run: |
+          rm -rf tests
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            git clone -b ${{ inputs.branch }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            git clone -b main "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git clone -b ${{ github.head_ref }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
+          else
+            echo "Event not supported"
+          fi
+
+      # Paso 4: Configurar Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.X
+          python-version: 3.12.0
           architecture: 'x64'
 
-      # Paso 3: Configuración de la caché de Python
+      # Paso 5: Configuración de la caché de Python
       - name: Cache Python requirements
         uses: actions/cache@v3
         with:
           path: venv # Caché del entorno virtual
-          key: ${{ runner.os }}-python-${{ hashFiles('./tests/requirements.txt') }}
+          key: ${{ runner.os }}-python-${{ hashFiles('./qa-tests/requirements.txt') }}
 
-      # Paso 4: Pip update and venv activation
-      - name: Set up and install dependencies
+      # Paso 6: Pip update and venv activation
+      - name: Set up Virtual environment project
         run: |
+          python -m pip install --upgrade pip
           python -m venv venv
           source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-        working-directory: tests
+        working-directory: qa-tests
 
-      # Paso 5: Instalar el proyecto
-      - name: Install Project
+      # Paso 7: Instalar el proyecto
+      - name: Install dependencies & requirements
         run: |
-          venv/bin/python -m pip install -e .
+          pip install -r requirements.txt -I
+        working-directory: qa-tests
 
-      # Paso 6: Configurar la variable de entorno PythonPath
+      # Paso 8: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
-        run: echo "PYTHONPATH=${{ github.workspace }}/lib_core" >> $GITHUB_ENV
+        run: |
+          echo "PYTHONPATH=${{ github.workspace }}/qa-tests" >> $GITHUB_ENV
 
-      # Paso 7: Ejecutar las pruebas con Pytest
+      # Paso 9: Ejecutar las pruebas con Pytest
       - name: Run tests
         timeout-minutes: 20
         run: |
-          source venv/bin/activate
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            venv/bin/pytest -m ${{ inputs.pytest_mark }}
+            pytest -m ${{ inputs.pytest_mark }}
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            pytest -m regression
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            venv/bin/pytest -m regression
-        working-directory: tests
+            pytest -m regression
+          else
+            echo "Event not supported"
+          fi
+        working-directory: qa-tests
         env:
           PYTEST_ADDOPTS: "--color=yes"
 
-      # Paso 8: Subir reporte
+      # Paso 10: Subir reporte
       - name: Generating html report artifact
         if: always()
         uses: actions/upload-artifact@v4 # Update to the latest stable version
         with:
           name: test-report
-          path: tests/report
+          path: qa-tests/report
           if-no-files-found: warn
