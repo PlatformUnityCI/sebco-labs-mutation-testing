@@ -101,6 +101,8 @@ jobs:
             pytest -m regression
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             pytest -m regression
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            pytest -m regression
           else
             echo "Event not supported"
           fi
