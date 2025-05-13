@@ -7,6 +7,8 @@ on:
   pull_request:
     branches: [ "main" ]
     types: [ opened, synchronize, reopened ]
+  schedule:
+    - cron: '15 17 * * 2'  # Martes a las 14:15 hora Argentina
   workflow_dispatch:
     inputs:
       branch:
@@ -93,6 +95,8 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             pytest -m ${{ inputs.pytest_mark }}
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            pytest -m regression
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             pytest -m regression
           else
