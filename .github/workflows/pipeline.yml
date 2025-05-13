@@ -66,7 +66,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: venv # Caché del entorno virtual
-          key: ${{ runner.os }}-python-${{ hashFiles('./tests/requirements.txt') }}
+          key: ${{ runner.os }}-python-${{ hashFiles('./qa-tests/requirements.txt') }}
 
       # Paso 6: Pip update and venv activation
       - name: Set up Virtual environment project
