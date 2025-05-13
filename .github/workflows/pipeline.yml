@@ -45,11 +45,11 @@ jobs:
         run: |
           rm -rf tests
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            git clone -b ${{ inputs.branch }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" tests
+            git clone -b ${{ inputs.branch }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
-            git clone -b main "git@github.com:SebasCouto/${{ env.QA_REPO }}" tests
+            git clone -b main "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git clone -b ${{ github.head_ref }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" tests
+            git clone -b ${{ github.head_ref }} "git@github.com:SebasCouto/${{ env.QA_REPO }}" qa-tests
           else
             echo "Event not supported"
           fi
@@ -74,17 +74,17 @@ jobs:
           python -m pip install --upgrade pip
           python -m venv venv
           source venv/bin/activate
-        working-directory: tests
+        working-directory: qa-tests
 
       # Paso 7: Instalar el proyecto
       - name: Install dependencies & requirements
         run: |
           pip install -r requirements.txt -I
-        working-directory: tests
+        working-directory: qa-tests
 
       # Paso 8: Configurar la variable de entorno PythonPath
       - name: Configure Python Path
-        run: echo "PYTHONPATH=${{ github.workspace }}/lib_core" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=${{ github.workspace }}/qa-tests/lib_core" >> $GITHUB_ENV
 
       # Paso 9: Ejecutar las pruebas con Pytest
       - name: Run tests
@@ -95,7 +95,7 @@ jobs:
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             pytest -m regression
           fi
-        working-directory: tests
+        working-directory: qa-tests
         env:
           PYTEST_ADDOPTS: "--color=yes"
 
@@ -105,5 +105,5 @@ jobs:
         uses: actions/upload-artifact@v4 # Update to the latest stable version
         with:
           name: test-report
-          path: tests/report
+          path: qa-tests/report
           if-no-files-found: warn
