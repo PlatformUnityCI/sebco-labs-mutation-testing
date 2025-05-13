@@ -8,7 +8,7 @@ on:
     branches: [ "main" ]
     types: [ opened, synchronize, reopened ]
   schedule:
-    - cron: '15 17 * * 2'  # Martes a las 14:15 hora Argentina
+    - cron: '30 21 * * 1-5' # Ejecuta de lunes a viernes a las 10:30 am horario de Argentina
   workflow_dispatch:
     inputs:
       branch:
