@@ -2,6 +2,7 @@ import datetime
 import logging
 import pytest
 import json
+from dateutil.relativedelta import relativedelta
 from lib_core.time_utils.get_periods import *
 from lib_core.time_utils.date_utils import generate_time
 
@@ -42,3 +43,63 @@ class TestExtractPeriods:
             assert expected["month"] == actual["month"], f"Mes incorrecto: esperado {expected['month']}, recibido {actual['month']}"
             assert expected["year"] == actual["year"], f"Mes incorrecto: esperado {expected['year']}, recibido {actual['year']}"
             assert expected["title"] == actual["title"], f"Mes incorrecto: esperado {expected['title']}, recibido {actual['title']}"
+
+    def test_get_periods_incluye_mes_anterior_si_hoy_mayor_igual_cinco(self):
+        """
+        Si hoy es posterior o igual al día 5 del mes, el período más reciente
+        debe corresponder al mes anterior.
+        """
+        account_created = datetime.date(2024, 11, 27)
+        today = datetime.date(2025, 3, 10)  # día 10 -> incluye mes anterior
+
+        periods = GetPeriod.get_expected_periods(account_created=account_created, today=today)
+
+        assert len(periods) > 0, "Se esperaba al menos un período generado"
+
+        # El período más reciente debe corresponder al mes anterior al actual
+        previous_month_date = today.replace(day=1) - relativedelta(months=1)
+        expected_month = str(previous_month_date.month)
+        expected_year = str(previous_month_date.year)
+        expected_title = f"{REVERSE_MONTHS[previous_month_date.month]} Reporte"
+
+        first = periods[0]
+        assert first["month"] == expected_month
+        assert first["year"] == expected_year
+        assert first["title"] == expected_title
+
+        # No debe aparecer el mes actual en la lista de períodos
+        assert not any(
+            p["month"] == str(today.month) and p["year"] == str(today.year)
+            for p in periods
+        )
+
+    def test_get_periods_excluye_mes_anterior_si_hoy_menor_cinco(self):
+        """
+        Si hoy es anterior al día 5 del mes, el período más reciente
+        debe corresponder al mes ante-anterior (se saltea el mes pasado).
+        """
+        account_created = datetime.date(2024, 11, 27)
+        today = datetime.date(2025, 3, 3)  # día 3 -> se saltea mes pasado
+
+        periods = GetPeriod.get_expected_periods(account_created=account_created, today=today)
+
+        assert len(periods) > 0, "Se esperaba al menos un período generado"
+
+        # El período más reciente debe ser dos meses hacia atrás (se saltea el mes pasado)
+        two_months_back_date = today.replace(day=1) - relativedelta(months=2)
+        expected_month = str(two_months_back_date.month)
+        expected_year = str(two_months_back_date.year)
+        expected_title = f"{REVERSE_MONTHS[two_months_back_date.month]} Reporte"
+
+        first = periods[0]
+        assert first["month"] == expected_month
+        assert first["year"] == expected_year
+        assert first["title"] == expected_title
+
+        # No debe aparecer el mes pasado en la lista de períodos
+        one_month_back_date = today.replace(day=1) - relativedelta(months=1)
+        assert not any(
+            p["month"] == str(one_month_back_date.month)
+            and p["year"] == str(one_month_back_date.year)
+            for p in periods
+        )

@@ -1,41 +1,6 @@
 from dateutil.relativedelta import relativedelta
+import datetime
 
-# 👇 Este es el JSON de ejemplo, podrías pasarlo como fixture o parámetro si querés más flexibilidad.
-response_json = {
-    "accountCreatedDate": "2024-11-27T13:36:44.071022997Z",
-    "periodList": [
-        {
-            "month": "4",
-            "year": "2025",
-            "title": "Abril Reporte"
-        },
-        {
-            "month": "3",
-            "year": "2025",
-            "title": "Marzo Reporte"
-        },
-        {
-            "month": "2",
-            "year": "2025",
-            "title": "Febrero Reporte"
-        },
-        {
-            "month": "1",
-            "year": "2025",
-            "title": "Enero Reporte"
-        },
-        {
-            "month": "12",
-            "year": "2024",
-            "title": "Diciembre Reporte"
-        },
-        {
-            "month": "11",
-            "year": "2024",
-            "title": "Noviembre Reporte"
-        }
-    ]
-}
 
 MONTHS = {
     "Enero": 1,
@@ -85,3 +50,29 @@ class GetPeriod:
             current -= relativedelta(months=1)
 
         return periods
+
+
+# 👇 Este es el JSON de ejemplo, ahora generado dinámicamente para que
+# los períodos coincidan con la lógica de `GetPeriod.get_expected_periods`
+from lib_core.time_utils.date_utils import generate_time
+
+_account_created_date_str = "2024-11-27T13:36:44.071022997Z"
+_account_created_date = datetime.datetime.fromisoformat(
+    _account_created_date_str.split("T")[0]
+).date()
+
+_today = datetime.datetime.fromisoformat(generate_time().split("T")[0]).date()
+_all_expected_periods = GetPeriod.get_expected_periods(
+    account_created=_account_created_date,
+    today=_today,
+)
+
+# La API debe devolver como máximo 12 períodos.
+_period_list = (
+    _all_expected_periods[:12] if len(_all_expected_periods) > 12 else _all_expected_periods
+)
+
+response_json = {
+    "accountCreatedDate": _account_created_date_str,
+    "periodList": _period_list,
+}
