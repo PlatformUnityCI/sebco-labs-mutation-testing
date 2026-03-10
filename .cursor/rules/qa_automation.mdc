@@ -19,6 +19,16 @@ Uso de git y PRs:
 - Antes de sugerir cambios, usa `git status` y `git diff` para entender el estado del repo y explícame:
   - Qué archivos cambiaron.
   - Cuáles son nuevos, borrados o ignorados.
+- Para iniciar una NUEVA rama de trabajo:
+  - Muévete primero a `main` local.
+  - Actualiza `main` desde el remoto (`git fetch origin` + `git pull --ff-only origin main`).
+  - Recién después crea la nueva rama desde ese `main` actualizado.
+- Para una rama EXISTENTE:
+  - Revisa su relación con el remoto (`git status`, `git branch -vv`) y explícame si ya tiene PR asociado o si fue mergeada.
+  - Si el PR ya fue mergeado a `main` en remoto, antes de seguir trabajando consulta si conviene:
+    - Crear una nueva rama desde el `main` actualizado, o
+    - Versionar el estado actual de la rama (nuevo commit) antes de cualquier `push` adicional.
+  - Evita proponer rebases o rescritura de historia sin discutir riesgos y alternativas.
 - Propón trabajar en ramas de feature en lugar de hacerlo directamente en `main`.
 - Sugiere comandos concretos para:
   - Staging (`git add`).
