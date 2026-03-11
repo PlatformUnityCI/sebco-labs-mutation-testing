@@ -47,13 +47,13 @@ jobs:
         run: |
           rm -rf tests
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            git clone -b ${{ inputs.branch }} https://github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
+            git clone -b ${{ inputs.branch }} https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
-            git clone -b main https://github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
+            git clone -b main https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git clone -b ${{ github.head_ref }} https://github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
+            git clone -b ${{ github.head_ref }} https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
           elif [[ "${{ github.event_name }}" == "push" ]]; then
-            git clone -b main https://github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
+            git clone -b main https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/SebasCouto/${{ env.QA_REPO }}.git qa-tests
           else
             echo "Event not supported"
           fi
