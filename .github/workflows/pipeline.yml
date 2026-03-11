@@ -35,11 +35,11 @@ jobs:
 
       # Paso 2
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Paso 4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12.0
           architecture: 'x64'
@@ -66,14 +66,32 @@ jobs:
       - name: Run tests
         timeout-minutes: 20
         run: |
+          mkdir -p report
+      
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            pytest -m ${{ inputs.pytest_mark }}
+            pytest -m ${{ inputs.pytest_mark }} \
+              --junitxml=report/junit.xml \
+              --html=report/html-report.html \
+              --self-contained-html
+      
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
-            pytest -m regression
+            pytest -m regression \
+              --junitxml=report/junit.xml \
+              --html=report/html-report.html \
+              --self-contained-html
+      
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            pytest -m regression
+            pytest -m regression \
+              --junitxml=report/junit.xml \
+              --html=report/html-report.html \
+              --self-contained-html
+      
           elif [[ "${{ github.event_name }}" == "push" ]]; then
-            pytest -m regression
+            pytest -m regression \
+              --junitxml=report/junit.xml \
+              --html=report/html-report.html \
+              --self-contained-html
+      
           else
             echo "Event not supported"
           fi
@@ -81,9 +99,16 @@ jobs:
           PYTEST_ADDOPTS: "--color=yes"
 
       # Paso 10
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: report/junit.xml
+          
+      # Paso 11
       - name: Generating html report artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-report
           path: report
