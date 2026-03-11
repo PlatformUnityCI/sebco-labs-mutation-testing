@@ -7,8 +7,8 @@ on:
   pull_request:
     branches: [ "main" ]
     types: [ opened, synchronize, reopened ]
-#  schedule:
-#    - cron: '30 21 * * 1-5'
+  schedule:
+    - cron: '30 21 * * 1-5'
   workflow_dispatch:
     inputs:
       branch:
@@ -20,6 +20,15 @@ on:
         default: regression
         required: true
 
+concurrency:
+  group: qa-pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,32 +46,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # Paso 4
+      # Paso 3
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.12.0
           architecture: 'x64'
 
-      # Paso 5
+      # Paso 4
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
 
-      # Paso 6
+      # Paso 5
       - name: Install dependencies & requirements
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -I
 
-      # Paso 7
+      # Paso 6
       - name: Configure Python Path
         run: |
           echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
-      # Paso 9
+      # Paso 7
       - name: Run tests
         timeout-minutes: 20
         run: |
@@ -98,14 +107,14 @@ jobs:
         env:
           PYTEST_ADDOPTS: "--color=yes"
 
-      # Paso 10
+      # Paso 8
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: report/junit.xml
           
-      # Paso 11
+      # Paso 9
       - name: Generating html report artifact
         if: always()
         uses: actions/upload-artifact@v5
