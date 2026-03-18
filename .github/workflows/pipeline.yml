@@ -132,15 +132,15 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v5
   
-      - name: Get PR diff
-        run: |
-          echo "Base ref: ${{ github.base_ref }}"
-          echo "Head ref: ${{ github.head_ref }}"
-  
-          git fetch origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
-  
-          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
-  
+        - name: Get PR diff
+          run: |
+            echo "Base ref: ${{ github.base_ref }}"
+            echo "Head ref: ${{ github.head_ref }}"
+    
+            git fetch origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
+    
+            git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+    
         - name: Set up Python
           uses: actions/setup-python@v5
           with:
