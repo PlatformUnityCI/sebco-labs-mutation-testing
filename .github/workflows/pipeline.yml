@@ -219,11 +219,18 @@ jobs:
             }
       
             const comments = JSON.parse(fs.readFileSync('comments.json', 'utf8'));
-      
+            const ISSUE_SEVERITIES = ["medium", "high"];
+            
             // 🧹 filtrar basura + asegurar path válido
-            const filtered = comments.filter(c => 
-              c.path && !c.path.includes("test")
-            );
+            const filtered = comments.filter(c => {
+              const severity = (c.severity || "").toLowerCase();
+            
+              return (
+                c.path &&
+                !c.path.includes("test") &&
+                ISSUE_SEVERITIES.includes(severity)
+              );
+            });
       
             // 📦 agrupar por archivo
             const grouped = {};
