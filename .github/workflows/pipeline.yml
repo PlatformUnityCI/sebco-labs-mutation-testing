@@ -265,3 +265,49 @@ jobs:
                 body
               });
             }
+            
+      # 🧹 cerrar issues resueltos automáticamente
+      - name: Close resolved issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+      
+            // 🚫 evitar forks
+            if (context.payload.pull_request.head.repo.fork) {
+              console.log("⚠️ Fork detected - skipping issue closing");
+              return;
+            }
+      
+            const comments = JSON.parse(fs.readFileSync('comments.json', 'utf8'));
+      
+            // archivos que siguen teniendo problemas
+            const activeFiles = new Set(
+              comments
+                .filter(c => c.path && !c.path.includes("test"))
+                .map(c => c.path)
+            );
+      
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open"
+            });
+      
+            for (const issue of existing.data) {
+              if (!issue.title.startsWith("[QA] Issues en ")) continue;
+      
+              const file = issue.title.replace("[QA] Issues en ", "");
+      
+              // 🔥 si ya no hay problemas → cerrar
+              if (!activeFiles.has(file)) {
+                console.log(`Closing issue for ${file}`);
+      
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: "closed"
+                });
+              }
+            }
