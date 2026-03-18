@@ -174,11 +174,21 @@ jobs:
       
             const commit_id = context.payload.pull_request.head.sha;
       
-            const reviewComments = comments.map(c => ({
-              path: c.path,
-              line: c.line,
-              body: `${c.icon} ${c.severity.toUpperCase()}(${c.score}) → ${c.body}`
-            }));
+            const reviewComments = comments
+              .filter(c => c.path && c.line) // evitar basura
+              .map(c => {
+                const severity = (c.severity || "low").toUpperCase();
+                const score = c.score || 1;
+                const icon = c.icon || "🟢";
+      
+                return {
+                  path: c.path,
+                  line: c.line,
+                  body: `${icon} ${severity}(${score}) → ${c.body || "No description"}`
+                };
+              });
+      
+            if (reviewComments.length === 0) return;
       
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
