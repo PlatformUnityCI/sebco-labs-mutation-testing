@@ -1,14 +1,16 @@
-
 import sys
 
 def summarize(diff_file):
     with open(diff_file, "r") as f:
         diff = f.read()
 
-    added = diff.count("\n+")
-    removed = diff.count("\n-")
+    # Contar líneas agregadas y eliminadas
+    added = sum(1 for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++"))
+    removed = sum(1 for line in diff.splitlines() if line.startswith("-") and not line.startswith("---"))
 
-    summary = f"""
+    print(f"""
+<!-- AI SUMMARY START -->
+
 ## 🧾 AI Summary
 
 ### 📊 Cambios detectados
@@ -25,9 +27,9 @@ def summarize(diff_file):
 
 ---
 _Generado automáticamente_
-"""
-    print(summary)
 
+<!-- AI SUMMARY END -->
+""")
 
 if __name__ == "__main__":
     summarize(sys.argv[1])
