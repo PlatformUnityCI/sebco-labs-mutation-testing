@@ -1,21 +1,20 @@
 import sys
 
 def analyze_diff(diff_text):
-    # MVP sin IA (para validar pipeline)
     lines = diff_text.split("\n")
 
-    findings = []
+    findings = set()
 
     for line in lines:
         if "TODO" in line:
-            findings.append("⚠️ Hay TODO pendiente en el código")
+            findings.add("⚠️ Hay TODO pendiente en el código")
         if "print(" in line:
-            findings.append("⚠️ Debug print encontrado")
+            findings.add("⚠️ Debug print encontrado")
 
     if not findings:
-        findings.append("✅ No issues básicos detectados")
+        findings.add("✅ No issues básicos detectados")
 
-    return "\n".join(f"- {f}" for f in findings)
+    return "\n".join(f"- {f}" for f in sorted(findings))
 
 
 if __name__ == "__main__":
