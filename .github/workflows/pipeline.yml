@@ -211,35 +211,53 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-
+      
+            // 🚫 evitar errores en forks (permisos limitados)
+            if (context.payload.pull_request.head.repo.fork) {
+              console.log("⚠️ Fork detected - skipping issue creation");
+              return;
+            }
+      
             const comments = JSON.parse(fs.readFileSync('comments.json', 'utf8'));
-
-            const filtered = comments.filter(c => !c.path.includes("test"));
-
+      
+            // 🧹 filtrar basura + asegurar path válido
+            const filtered = comments.filter(c => 
+              c.path && !c.path.includes("test")
+            );
+      
+            // 📦 agrupar por archivo
             const grouped = {};
             for (const c of filtered) {
               if (!grouped[c.path]) grouped[c.path] = [];
               grouped[c.path].push(c);
             }
-
+      
+            // 📚 traer issues existentes
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: "open"
             });
-
+      
+            // 📝 crear issues por archivo
             for (const file in grouped) {
               const title = `[QA] Issues en ${file}`;
-
+      
               const exists = existing.data.some(i => i.title === title);
               if (exists) continue;
-
+      
               let body = `Archivo: ${file}\n\n`;
-
+      
               for (const i of grouped[file]) {
-                body += `- ${i.icon} ${i.severity.toUpperCase()}(${i.score}) → Línea ${i.line}: ${i.body}\n`;
+                const severity = (i.severity || "low").toUpperCase();
+                const score = i.score || 1;
+                const icon = i.icon || "🟢";
+                const line = i.line || "?";
+                const text = i.body || "No description";
+      
+                body += `- ${icon} ${severity}(${score}) → Línea ${line}: ${text}\n`;
               }
-
+      
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
