@@ -187,8 +187,9 @@ jobs:
               const start = '<!-- AI SUMMARY START -->';
               const end = '<!-- AI SUMMARY END -->';
         
-              if (currentBody.includes(start) && currentBody.includes(end)) {
-                const regex = new RegExp(`${start}[\\s\\S]*?${end}`, 'g');
+              const regex = new RegExp(`${start}[\\s\\S]*?${end}`, 'g');
+        
+              if (regex.test(currentBody)) {
                 currentBody = currentBody.replace(regex, newSummary);
               } else {
                 currentBody = currentBody + "\n\n" + newSummary;
