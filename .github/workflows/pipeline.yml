@@ -180,15 +180,23 @@ jobs:
           with:
             script: |
               const fs = require('fs');
+        
               const newSummary = fs.readFileSync('summary.md', 'utf8');
+              let currentBody = context.payload.pull_request.body || '';
         
-              const currentBody = context.payload.pull_request.body || '';
+              const start = '<!-- AI SUMMARY START -->';
+              const end = '<!-- AI SUMMARY END -->';
         
-              const updatedBody = currentBody + "\n\n---\n\n" + newSummary;
+              if (currentBody.includes(start) && currentBody.includes(end)) {
+                const regex = new RegExp(`${start}[\\s\\S]*?${end}`, 'g');
+                currentBody = currentBody.replace(regex, newSummary);
+              } else {
+                currentBody = currentBody + "\n\n" + newSummary;
+              }
         
               await github.rest.pulls.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: context.issue.number,
-                body: updatedBody
+                body: currentBody
               });
