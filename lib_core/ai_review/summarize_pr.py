@@ -1,13 +1,6 @@
-import sys
+print(f"""
+<!-- AI SUMMARY START -->
 
-def summarize(diff_file):
-    with open(diff_file, "r") as f:
-        diff = f.read()
-
-    added = diff.count("\n+")
-    removed = diff.count("\n-")
-
-    summary = f"""
 ## 🧾 AI Summary
 
 ### 📊 Cambios detectados
@@ -24,9 +17,6 @@ def summarize(diff_file):
 
 ---
 _Generado automáticamente_
-"""
-    print(summary)
 
-
-if __name__ == "__main__":
-    summarize(sys.argv[1])
+<!-- AI SUMMARY END -->
+""")
