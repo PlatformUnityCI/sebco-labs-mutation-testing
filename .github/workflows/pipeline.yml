@@ -167,20 +167,19 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const core = require('@actions/core');
-
+      
             const comments = JSON.parse(fs.readFileSync('comments.json', 'utf8'));
-
+      
             if (comments.length === 0) return;
-
+      
             const commit_id = context.payload.pull_request.head.sha;
-
+      
             const reviewComments = comments.map(c => ({
               path: c.path,
               line: c.line,
               body: `${c.icon} ${c.severity.toUpperCase()}(${c.score}) → ${c.body}`
             }));
-
+      
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -189,7 +188,7 @@ jobs:
               event: "COMMENT",
               comments: reviewComments
             });
-
+      
             // 🚦 bloquear solo si HIGH
             if (comments.some(c => c.severity === "high")) {
               core.setFailed("🔴 High severity issues detected");
