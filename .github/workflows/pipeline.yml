@@ -211,6 +211,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            const prUrl = context.payload.pull_request.html_url;
       
             // 🚫 evitar errores en forks (permisos limitados)
             if (context.payload.pull_request.head.repo.fork) {
