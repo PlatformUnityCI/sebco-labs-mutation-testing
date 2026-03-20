@@ -86,6 +86,6 @@ jobs:
 
   ai-review:
     needs: build
-    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/ai-review.yml@main
+    uses: SebasCouto/cross-platform-guard/.github/workflows/ai-review.yml@main
     with:
       language: python
