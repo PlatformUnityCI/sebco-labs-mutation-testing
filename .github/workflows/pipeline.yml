@@ -84,7 +84,7 @@ jobs:
           name: test-report
           path: report
 
-  ai-review:
+  qa-engine:
     needs: build
     uses: PlatformUnityCI/cross-platform-guard/.github/workflows/ai-review.yml@main
     with:
