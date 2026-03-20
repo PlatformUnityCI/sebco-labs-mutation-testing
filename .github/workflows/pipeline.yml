@@ -85,6 +85,7 @@ jobs:
           path: report
 
   qa-engine:
+    if: github.event_name == 'pull_request'
     needs: build
     uses: PlatformUnityCI/cross-platform-guard/.github/workflows/ai-review.yml@main
     with:
