@@ -1,4 +1,4 @@
-# TECH READ QA TEAM
+# TECH READ QA TEAM --
 
 Esta guía se enfoca en asegurar la compatibilidad con los sistemas operativos [macOS](https://es.wikipedia.org/wiki/MacOS)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/apple.svg" alt="MacOS" width="15" height="25"> & [Windows](https://es.wikipedia.org/wiki/Microsoft_Windows)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/windows.svg" alt="Windows" width="15" height="25"> al configurar un proyecto [Python](https://www.python.org/)<img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/python.svg" alt="Python" width="15" height="25"> con Visual Studio Code, utilizando Pytest para la ejecución de pruebas.
 
