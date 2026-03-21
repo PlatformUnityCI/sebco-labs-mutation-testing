@@ -12,4 +12,4 @@ permissions:
 
 jobs:
   release:
-    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/release-governance.yml@v1.2.0
+    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/release-governance.yml@v1.2.1
