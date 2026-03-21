@@ -7,4 +7,4 @@ on:
 
 jobs:
   governance:
-    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/pr-governance.yml@v1
+    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/pr-governance.yml@v1.2.0
