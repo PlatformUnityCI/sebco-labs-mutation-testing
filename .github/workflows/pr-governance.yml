@@ -12,4 +12,4 @@ permissions:
 
 jobs:
   governance:
-    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/pr-governance.yml@v1.2.2
+    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/pr-governance.yml@v1.2.3
