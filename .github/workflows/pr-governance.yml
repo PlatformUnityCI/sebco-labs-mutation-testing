@@ -1,0 +1,10 @@
+name: PR Governance
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    types: [ opened, edited, synchronize, reopened ]
+
+jobs:
+  governance:
+    uses: PlatformUnityCI/cross-platform-guard/.github/workflows/pr-governance.yml@v1
