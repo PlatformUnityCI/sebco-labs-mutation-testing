@@ -193,6 +193,61 @@ jobs:
         if: always()
         run: cat mutation-report/mutation-score.txt
 
+      - name: Comment mutation summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            const scoreFile = fs.readFileSync('mutation-report/mutation-score.txt', 'utf8');
+            const values = Object.fromEntries(
+              scoreFile
+                .trim()
+                .split('\n')
+                .map(line => line.split('='))
+            );
+
+            const body = `## Mutation Testing Summary
+
+            | Metric | Value |
+            |---|---:|
+            | Mutation Score | **${values.score}%** |
+            | Killed | **${values.killed}** |
+            | Survived | **${values.survived}** |
+            | Total evaluated | **${values.total}** |`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## Mutation Testing Summary')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
       - name: Upload mutation report
         if: always()
         uses: actions/upload-artifact@v7
