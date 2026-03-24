@@ -33,6 +33,7 @@ permissions:
   pull-requests: write
   checks: write
   issues: write
+  actions: read
 
 jobs:
   build:
@@ -173,13 +174,13 @@ jobs:
           report_dir = Path("mutation-report")
           report_dir.mkdir(parents=True, exist_ok=True)
 
-          with open(report_dir / "mutation-score.txt", "w") as f:
+          with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
               f.write(f"score={score}\n")
               f.write(f"killed={killed}\n")
               f.write(f"survived={survived}\n")
               f.write(f"total={total}\n")
 
-          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write("\n".join(summary_lines) + "\n")
           PY
 
@@ -204,47 +205,53 @@ jobs:
 
             const scoreFile = fs.readFileSync('mutation-report/mutation-score.txt', 'utf8');
             const values = Object.fromEntries(
-              scoreFile.trim().split('\n').map(line => line.split('='))
+              scoreFile
+                .trim()
+                .split('\n')
+                .map(line => line.split('='))
             );
 
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
+            const runId = process.env.GITHUB_RUN_ID;
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner,
               repo,
-              run_id: context.runId,
+              run_id: Number(runId),
             });
 
             const mutationArtifact = artifacts.data.artifacts.find(
-              a => a.name === 'mutation-report'
+              artifact => artifact.name === 'mutation-report'
             );
 
             const artifactUrl = mutationArtifact
-              ? `https://github.com/${owner}/${repo}/actions/runs/${context.runId}/artifacts/${mutationArtifact.id}`
-              : `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+              ? `https://github.com/${owner}/${repo}/actions/runs/${runId}/artifacts/${mutationArtifact.id}`
+              : `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
 
-            const body = `## Mutation Testing Summary
-
-| Metric | Value |
-|---|---:|
-| Mutation Score | **${values.score}%** |
-| Killed | **${values.killed}** |
-| Survived | **${values.survived}** |
-| Total evaluated | **${values.total}** |
-
-🔍 **Artifact report:** [Open mutation-report](${artifactUrl})
-`;
+            const body = [
+              '## Mutation Testing Summary',
+              '',
+              '| Metric | Value |',
+              '|---|---:|',
+              `| Mutation Score | **${values.score}%** |`,
+              `| Killed | **${values.killed}** |`,
+              `| Survived | **${values.survived}** |`,
+              `| Total evaluated | **${values.total}** |`,
+              '',
+              `🔍 **Artifact report:** [Open mutation-report](${artifactUrl})`,
+            ].join('\n');
 
             const comments = await github.rest.issues.listComments({
               owner,
               repo,
               issue_number,
+              per_page: 100,
             });
 
-            const existing = comments.data.find(c =>
-              c.user.type === 'Bot' &&
-              c.body.includes('Mutation Testing Summary')
+            const existing = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## Mutation Testing Summary')
             );
 
             if (existing) {
