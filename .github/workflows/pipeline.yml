@@ -19,6 +19,10 @@ on:
         description: 'QA mark to run tests'
         default: regression
         required: true
+      run_mutation:
+        description: 'Run mutation testing'
+        default: 'true'
+        required: true
 
 concurrency:
   group: qa-pipeline-${{ github.ref }}
@@ -29,6 +33,7 @@ permissions:
   pull-requests: write
   checks: write
   issues: write
+  actions: read
 
 jobs:
   build:
@@ -66,7 +71,8 @@ jobs:
       - name: Run tests
         run: |
           mkdir -p report
-          pytest -m regression \
+          PYTEST_MARK="${{ github.event.inputs.pytest_mark || 'regression' }}"
+          pytest -m "$PYTEST_MARK" \
             --junitxml=report/junit.xml \
             --html=report/html-report.html \
             --self-contained-html
@@ -84,6 +90,205 @@ jobs:
           name: test-report
           path: report
 
+  mutation:
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run_mutation == 'true')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12.0
+
+      - name: Cache pip
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -I
+
+      - name: Configure Python Path
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
+      - name: Run mutation testing
+        run: |
+          mkdir -p mutation-report
+          mutmut run | tee mutation-report/mutmut-run.txt
+
+      - name: Collect mutation results
+        if: always()
+        run: |
+          {
+            echo "=== mutmut results ==="
+            mutmut results || true
+            echo
+            echo "=== surviving mutants details ==="
+            mutmut results --all || true
+          } | tee mutation-report/mutmut-results.txt
+
+      - name: Calculate mutation score
+        if: always()
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          run_file = Path("mutation-report/mutmut-run.txt")
+          text = run_file.read_text(encoding="utf-8", errors="ignore")
+
+          clean = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+
+          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', clean, flags=re.DOTALL)
+          if not matches:
+              killed = 0
+              survived = 0
+          else:
+              killed, survived = map(int, matches[-1])
+
+          total = killed + survived
+          score = round((killed / total) * 100, 2) if total else 0.0
+
+          summary_lines = [
+              "## Mutation Testing Summary",
+              "",
+              "| Metric | Value |",
+              "|---|---:|",
+              f"| Mutation Score | **{score}%** |",
+              f"| Killed | **{killed}** |",
+              f"| Survived | **{survived}** |",
+              f"| Total evaluated | **{total}** |",
+          ]
+
+          report_dir = Path("mutation-report")
+          report_dir.mkdir(parents=True, exist_ok=True)
+
+          with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
+              f.write(f"score={score}\n")
+              f.write(f"killed={killed}\n")
+              f.write(f"survived={survived}\n")
+              f.write(f"total={total}\n")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write("\n".join(summary_lines) + "\n")
+          PY
+
+      - name: Print mutation score
+        if: always()
+        run: cat mutation-report/mutation-score.txt
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: mutation-report
+
+      - name: Comment mutation summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            const scoreFile = fs.readFileSync('mutation-report/mutation-score.txt', 'utf8');
+            const values = Object.fromEntries(
+              scoreFile
+                .trim()
+                .split('\n')
+                .map(line => line.split('='))
+            );
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const runId = process.env.GITHUB_RUN_ID;
+            const currentScore = parseFloat(values.score || '0');
+
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner,
+              repo,
+              run_id: Number(runId),
+            });
+
+            const mutationArtifact = artifacts.data.artifacts.find(
+              artifact => artifact.name === 'mutation-report'
+            );
+
+            const artifactUrl = mutationArtifact
+              ? `https://github.com/${owner}/${repo}/actions/runs/${runId}/artifacts/${mutationArtifact.id}`
+              : `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## Mutation Testing Summary')
+            );
+
+            let trendText = '🆕 baseline';
+
+            if (existing) {
+              const match = existing.body.match(/\| Mutation Score \| \*\*(\d+(?:\.\d+)?)%\*\*(?:\s+([^\|]+))?\s+\|/);
+              if (match) {
+                const previousScore = parseFloat(match[1]);
+                const delta = Number((currentScore - previousScore).toFixed(2));
+
+                if (delta > 0) {
+                  trendText = `⬆️ +${delta}%`;
+                } else if (delta < 0) {
+                  trendText = `⬇️ ${delta}%`;
+                } else {
+                  trendText = '➡️ 0.0%';
+                }
+              }
+            }
+
+            const body = [
+              '## Mutation Testing Summary',
+              '',
+              '| Metric | Value |',
+              '|---|---:|',
+              `| Mutation Score | **${values.score}%** ${trendText} |`,
+              `| Killed | **${values.killed}** |`,
+              `| Survived | **${values.survived}** |`,
+              `| Total evaluated | **${values.total}** |`,
+              '',
+              `🔍 **Artifact report:** [Open mutation-report](${artifactUrl})`,
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
   qa-engine:
     if: github.event_name == 'pull_request'
     needs: build
@@ -91,4 +296,4 @@ jobs:
     with:
       language: python
     secrets:
-        CROSS_PLATFORM_GUARD_TOKEN: ${{ secrets.CROSS_PLATFORM_GUARD_TOKEN }}
+      CROSS_PLATFORM_GUARD_TOKEN: ${{ secrets.CROSS_PLATFORM_GUARD_TOKEN }}
