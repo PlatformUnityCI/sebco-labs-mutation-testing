@@ -214,6 +214,7 @@ jobs:
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
             const runId = process.env.GITHUB_RUN_ID;
+            const currentScore = parseFloat(values.score || '0');
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner,
@@ -229,19 +230,6 @@ jobs:
               ? `https://github.com/${owner}/${repo}/actions/runs/${runId}/artifacts/${mutationArtifact.id}`
               : `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
 
-            const body = [
-              '## Mutation Testing Summary',
-              '',
-              '| Metric | Value |',
-              '|---|---:|',
-              `| Mutation Score | **${values.score}%** |`,
-              `| Killed | **${values.killed}** |`,
-              `| Survived | **${values.survived}** |`,
-              `| Total evaluated | **${values.total}** |`,
-              '',
-              `🔍 **Artifact report:** [Open mutation-report](${artifactUrl})`,
-            ].join('\n');
-
             const comments = await github.rest.issues.listComments({
               owner,
               repo,
@@ -253,6 +241,37 @@ jobs:
               comment.user.type === 'Bot' &&
               comment.body.includes('## Mutation Testing Summary')
             );
+
+            let trendText = '🆕 baseline';
+
+            if (existing) {
+              const match = existing.body.match(/\| Mutation Score \| \*\*(\d+(?:\.\d+)?)%\*\*(?:\s+([^\|]+))?\s+\|/);
+              if (match) {
+                const previousScore = parseFloat(match[1]);
+                const delta = Number((currentScore - previousScore).toFixed(2));
+
+                if (delta > 0) {
+                  trendText = `⬆️ +${delta}%`;
+                } else if (delta < 0) {
+                  trendText = `⬇️ ${delta}%`;
+                } else {
+                  trendText = '➡️ 0.0%';
+                }
+              }
+            }
+
+            const body = [
+              '## Mutation Testing Summary',
+              '',
+              '| Metric | Value |',
+              '|---|---:|',
+              `| Mutation Score | **${values.score}%** ${trendText} |`,
+              `| Killed | **${values.killed}** |`,
+              `| Survived | **${values.survived}** |`,
+              `| Total evaluated | **${values.total}** |`,
+              '',
+              `🔍 **Artifact report:** [Open mutation-report](${artifactUrl})`,
+            ].join('\n');
 
             if (existing) {
               await github.rest.issues.updateComment({
