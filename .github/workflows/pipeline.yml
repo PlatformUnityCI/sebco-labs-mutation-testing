@@ -249,51 +249,68 @@ jobs:
           report_dir.mkdir(parents=True, exist_ok=True)
 
           run_file = report_dir / "mutmut-run.txt"
-          results_file = report_dir / "mutmut-results.txt"
+          survived_file = report_dir / "surviving-mutants.txt"
 
           run_text = run_file.read_text(encoding="utf-8", errors="ignore") if run_file.exists() else ""
-          results_text = results_file.read_text(encoding="utf-8", errors="ignore") if results_file.exists() else ""
+          survived_text = survived_file.read_text(encoding="utf-8", errors="ignore") if survived_file.exists() else ""
 
           def strip_ansi(text: str) -> str:
               return re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
 
           run_clean = strip_ansi(run_text)
-          results_clean = strip_ansi(results_text)
 
-          killed = 0
-          survived = 0
+          surviving_ids = [line.strip() for line in survived_text.splitlines() if line.strip()]
+          survived = len(surviving_ids)
 
-          # 1) Intento con emojis del resumen de mutmut
-          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', run_clean, flags=re.DOTALL)
-          if matches:
-              killed, survived = map(int, matches[-1])
-          else:
-              # 2) Fallback: contar survived desde results
-              survived = len(re.findall(r':\s+survived\b', results_clean))
+          killed = None
+          total = None
 
-              # 3) Intentar extraer killed desde run si aparece como texto
-              killed_match = re.search(r'killed[^0-9]*(\d+)', run_clean, flags=re.IGNORECASE)
-              if killed_match:
-                  killed = int(killed_match.group(1))
+          patterns = [
+              r'🎉\s*(\d+).*?🙁\s*(\d+)',
+              r'killed[^0-9]*(\d+).*?survived[^0-9]*(\d+)',
+              r'survived[^0-9]*(\d+).*?killed[^0-9]*(\d+)',
+          ]
 
-          total = killed + survived
-          score = round((killed / total) * 100, 2) if total else 0.0
+          for pattern in patterns:
+              match = re.search(pattern, run_clean, flags=re.IGNORECASE | re.DOTALL)
+              if match:
+                  a = int(match.group(1))
+                  b = int(match.group(2))
+
+                  if "survived" in pattern and pattern.startswith("survived"):
+                      survived = a
+                      killed = b
+                  else:
+                      killed = a
+                      survived = b if pattern == r'🎉\s*(\d+).*?🙁\s*(\d+)' or pattern.startswith('killed') else survived
+
+                  total = killed + survived
+                  break
+
+          parse_ok = killed is not None and total is not None and total > 0
+
+          if not parse_ok:
+              killed = ""
+              total = ""
+
+          score = round((int(killed) / int(total)) * 100, 2) if parse_ok else ""
 
           with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
               f.write(f"score={score}\n")
               f.write(f"killed={killed}\n")
               f.write(f"survived={survived}\n")
               f.write(f"total={total}\n")
+              f.write(f"parse_ok={str(parse_ok).lower()}\n")
 
           summary_lines = [
               "## Mutation Testing Summary",
               "",
               "| Metric | Value |",
               "|---|---:|",
-              f"| Mutation Score | **{score}%** |",
-              f"| Killed | **{killed}** |",
+              f"| Mutation Score | **{score if score != '' else 'pending'}{'%' if score != '' else ''}** |",
+              f"| Killed | **{killed if killed != '' else 'pending'}** |",
               f"| Survived | **{survived}** |",
-              f"| Total evaluated | **{total}** |",
+              f"| Total evaluated | **{total if total != '' else 'pending'}** |",
               "",
               "### Generated files",
               "",
@@ -338,7 +355,6 @@ jobs:
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
             const runId = process.env.GITHUB_RUN_ID;
-            const currentScore = parseFloat(values.score || '0');
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner,
@@ -367,23 +383,60 @@ jobs:
               (comment.body.includes(marker) || comment.body.includes('## Mutation Testing Summary'))
             );
 
-            let trendText = '🆕 baseline';
+            function extractMetric(body, name) {
+              const re = new RegExp(`\\| ${name} \\| \\*\\*([^*]+)\\*\\*`);
+              const match = body.match(re);
+              return match ? match[1].replace('%', '').trim() : null;
+            }
+
+            let survived = parseInt(values.survived || '0', 10);
+            let killed = values.killed !== '' ? parseInt(values.killed || '0', 10) : null;
+            let total = values.total !== '' ? parseInt(values.total || '0', 10) : null;
+            let score = values.score !== '' ? parseFloat(values.score || '0') : null;
+            const parseOk = values.parse_ok === 'true';
+
+            let previousScore = null;
+            let previousTotal = null;
 
             if (existing) {
-              const match = existing.body.match(/\| Mutation Score \| \*\*(\d+(?:\.\d+)?)%\*\*(?:\s+([^\|]+))?\s+\|/);
-              if (match) {
-                const previousScore = parseFloat(match[1]);
-                const delta = Number((currentScore - previousScore).toFixed(2));
+              const prevScoreRaw = extractMetric(existing.body, 'Mutation Score');
+              const prevTotalRaw = extractMetric(existing.body, 'Total evaluated');
 
-                if (delta > 0) {
-                  trendText = `⬆️ +${delta}%`;
-                } else if (delta < 0) {
-                  trendText = `⬇️ ${delta}%`;
-                } else {
-                  trendText = '➡️ 0.0%';
-                }
+              previousScore = prevScoreRaw !== null ? parseFloat(prevScoreRaw) : null;
+              previousTotal = prevTotalRaw !== null ? parseInt(prevTotalRaw, 10) : null;
+            }
+
+            // Fallback inteligente:
+            // si no pudimos sacar total/killed del run actual pero sí sabemos cuántos survived hay,
+            // reutilizamos el total anterior del comentario.
+            if ((!parseOk || total === null || total === 0) && previousTotal && survived >= 0) {
+              total = previousTotal;
+              killed = Math.max(total - survived, 0);
+              score = total > 0 ? Number(((killed / total) * 100).toFixed(2)) : 0;
+            }
+
+            let trendText = '🆕 baseline';
+            if (previousScore !== null && score !== null) {
+              const delta = Number((score - previousScore).toFixed(2));
+              if (delta > 0) {
+                trendText = `⬆️ +${delta}%`;
+              } else if (delta < 0) {
+                trendText = `⬇️ ${delta}%`;
+              } else {
+                trendText = '➡️ 0.0%';
               }
             }
+
+            const survivedMutants = fs.existsSync('mutation-report/surviving-mutants.txt')
+              ? fs.readFileSync('mutation-report/surviving-mutants.txt', 'utf8')
+                  .split('\n')
+                  .map(x => x.trim())
+                  .filter(Boolean)
+              : [];
+
+            const mutantLines = survivedMutants.length
+              ? survivedMutants.map(x => `- \`${x}\``)
+              : ['- No surviving mutants detected'];
 
             const body = [
               marker,
@@ -391,10 +444,14 @@ jobs:
               '',
               '| Metric | Value |',
               '|---|---:|',
-              `| Mutation Score | **${values.score}%** ${trendText} |`,
-              `| Killed | **${values.killed}** |`,
-              `| Survived | **${values.survived}** |`,
-              `| Total evaluated | **${values.total}** |`,
+              `| Mutation Score | **${score !== null ? score : 'pending'}${score !== null ? '%' : ''}** ${trendText} |`,
+              `| Killed | **${killed !== null ? killed : 'pending'}** |`,
+              `| Survived | **${survived}** |`,
+              `| Total evaluated | **${total !== null ? total : 'pending'}** |`,
+              '',
+              '### Surviving mutants',
+              '',
+              ...mutantLines,
               '',
               '### Mutation evidence',
               '',
