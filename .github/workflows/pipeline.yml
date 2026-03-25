@@ -160,14 +160,11 @@ jobs:
               if not line:
                   continue
 
-              # Caso como el tuyo:
-              # lib_core.time_utils.date_utils.x_generate_time__mutmut_2: survived
               m_named = re.match(r'^([A-Za-z0-9_./]+(?:__mutmut_\d+)):\s+survived$', line)
               if m_named:
                   ids.append(m_named.group(1))
                   continue
 
-              # Fallback por si mutmut devuelve IDs numéricos en otra versión
               m_num = re.match(r'^(\d+)\b', line)
               if m_num:
                   ids.append(m_num.group(1))
@@ -248,23 +245,39 @@ jobs:
           import re
           from pathlib import Path
 
-          run_file = Path("mutation-report/mutmut-run.txt")
-          text = run_file.read_text(encoding="utf-8", errors="ignore") if run_file.exists() else ""
+          report_dir = Path("mutation-report")
+          report_dir.mkdir(parents=True, exist_ok=True)
 
-          clean = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+          run_file = report_dir / "mutmut-run.txt"
+          results_file = report_dir / "mutmut-results.txt"
 
-          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', clean, flags=re.DOTALL)
-          if not matches:
-              killed = 0
-              survived = 0
-          else:
+          run_text = run_file.read_text(encoding="utf-8", errors="ignore") if run_file.exists() else ""
+          results_text = results_file.read_text(encoding="utf-8", errors="ignore") if results_file.exists() else ""
+
+          def strip_ansi(text: str) -> str:
+              return re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+
+          run_clean = strip_ansi(run_text)
+          results_clean = strip_ansi(results_text)
+
+          killed = 0
+          survived = 0
+
+          # 1) Intento con emojis del resumen de mutmut
+          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', run_clean, flags=re.DOTALL)
+          if matches:
               killed, survived = map(int, matches[-1])
+          else:
+              # 2) Fallback: contar survived desde results
+              survived = len(re.findall(r':\s+survived\b', results_clean))
+
+              # 3) Intentar extraer killed desde run si aparece como texto
+              killed_match = re.search(r'killed[^0-9]*(\d+)', run_clean, flags=re.IGNORECASE)
+              if killed_match:
+                  killed = int(killed_match.group(1))
 
           total = killed + survived
           score = round((killed / total) * 100, 2) if total else 0.0
-
-          report_dir = Path("mutation-report")
-          report_dir.mkdir(parents=True, exist_ok=True)
 
           with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
               f.write(f"score={score}\n")
@@ -351,7 +364,7 @@ jobs:
             const marker = '<!-- mutation-testing-summary -->';
             const existing = comments.data.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes(marker)
+              (comment.body.includes(marker) || comment.body.includes('## Mutation Testing Summary'))
             );
 
             let trendText = '🆕 baseline';
