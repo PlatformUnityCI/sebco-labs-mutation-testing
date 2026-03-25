@@ -48,8 +48,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -103,8 +101,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -115,7 +111,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml', 'setup.cfg') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
 
       - name: Install dependencies
         run: |
@@ -125,11 +121,9 @@ jobs:
       - name: Configure Python Path
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
-      - name: Prepare mutation report folder
-        run: mkdir -p mutation-report
-
       - name: Run mutation testing
         run: |
+          mkdir -p mutation-report
           mutmut run | tee mutation-report/mutmut-run.txt
 
       - name: Collect mutation results
@@ -139,106 +133,9 @@ jobs:
             echo "=== mutmut results ==="
             mutmut results || true
             echo
-            echo "=== mutmut show summary ==="
-            mutmut show || true
-          } | tee mutation-report/mutmut-results.txt
-
-      - name: Extract surviving mutant IDs
-        if: always()
-        shell: bash
-        run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-
-          results_file = Path("mutation-report/mutmut-results.txt")
-          text = results_file.read_text(encoding="utf-8", errors="ignore")
-
-          ids = []
-          for line in text.splitlines():
-              line = line.strip()
-              if not line:
-                  continue
-
-              # Caso como el tuyo:
-              # lib_core.time_utils.date_utils.x_generate_time__mutmut_2: survived
-              m_named = re.match(r'^([A-Za-z0-9_./]+(?:__mutmut_\d+)):\s+survived$', line)
-              if m_named:
-                  ids.append(m_named.group(1))
-                  continue
-
-              # Fallback por si mutmut devuelve IDs numéricos en otra versión
-              m_num = re.match(r'^(\d+)\b', line)
-              if m_num:
-                  ids.append(m_num.group(1))
-
-          unique_ids = []
-          seen = set()
-          for mutant_id in ids:
-              if mutant_id not in seen:
-                  unique_ids.append(mutant_id)
-                  seen.add(mutant_id)
-
-          out = Path("mutation-report/surviving-mutants.txt")
-          out.write_text("\n".join(unique_ids) + ("\n" if unique_ids else ""), encoding="utf-8")
-
-          print(f"Detected surviving mutants: {len(unique_ids)}")
-          for item in unique_ids:
-              print(f"- {item}")
-          PY
-
-      - name: Show each surviving mutant
-        if: always()
-        shell: bash
-        run: |
-          {
             echo "=== surviving mutants details ==="
-            echo
-            if [ ! -s mutation-report/surviving-mutants.txt ]; then
-              echo "No surviving mutants detected."
-            else
-              while IFS= read -r mutant_id; do
-                [ -z "$mutant_id" ] && continue
-                echo "----- MUTANT: $mutant_id -----"
-                mutmut show "$mutant_id" || true
-                echo
-              done < mutation-report/surviving-mutants.txt
-            fi
-          } | tee mutation-report/mutmut-show.txt
-
-      - name: Generate diff for each surviving mutant
-        if: always()
-        shell: bash
-        run: |
-          {
-            echo "=== surviving mutants git diff ==="
-            echo
-            if [ ! -s mutation-report/surviving-mutants.txt ]; then
-              echo "No surviving mutants detected."
-            else
-              while IFS= read -r mutant_id; do
-                [ -z "$mutant_id" ] && continue
-
-                echo "===== APPLYING: $mutant_id ====="
-                git reset --hard HEAD >/dev/null 2>&1 || true
-                git clean -fd >/dev/null 2>&1 || true
-
-                if mutmut apply "$mutant_id" >/dev/null 2>&1; then
-                  echo "--- git diff for $mutant_id ---"
-                  git --no-pager diff -- . ':(exclude)mutants/' || true
-                else
-                  echo "Could not apply mutant: $mutant_id"
-                fi
-
-                echo
-                echo "===== END: $mutant_id ====="
-                echo
-              done < mutation-report/surviving-mutants.txt
-            fi
-
-            git reset --hard HEAD >/dev/null 2>&1 || true
-            git clean -fd >/dev/null 2>&1 || true
-          } | tee mutation-report/mutmut-diffs.txt
+            mutmut results --all || true
+          } | tee mutation-report/mutmut-results.txt
 
       - name: Calculate mutation score
         if: always()
@@ -249,7 +146,7 @@ jobs:
           from pathlib import Path
 
           run_file = Path("mutation-report/mutmut-run.txt")
-          text = run_file.read_text(encoding="utf-8", errors="ignore") if run_file.exists() else ""
+          text = run_file.read_text(encoding="utf-8", errors="ignore")
 
           clean = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
 
@@ -263,15 +160,6 @@ jobs:
           total = killed + survived
           score = round((killed / total) * 100, 2) if total else 0.0
 
-          report_dir = Path("mutation-report")
-          report_dir.mkdir(parents=True, exist_ok=True)
-
-          with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
-              f.write(f"score={score}\n")
-              f.write(f"killed={killed}\n")
-              f.write(f"survived={survived}\n")
-              f.write(f"total={total}\n")
-
           summary_lines = [
               "## Mutation Testing Summary",
               "",
@@ -281,15 +169,16 @@ jobs:
               f"| Killed | **{killed}** |",
               f"| Survived | **{survived}** |",
               f"| Total evaluated | **{total}** |",
-              "",
-              "### Generated files",
-              "",
-              "- `mutmut-run.txt`",
-              "- `mutmut-results.txt`",
-              "- `mutmut-show.txt`",
-              "- `mutmut-diffs.txt`",
-              "- `surviving-mutants.txt`",
           ]
+
+          report_dir = Path("mutation-report")
+          report_dir.mkdir(parents=True, exist_ok=True)
+
+          with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
+              f.write(f"score={score}\n")
+              f.write(f"killed={killed}\n")
+              f.write(f"survived={survived}\n")
+              f.write(f"total={total}\n")
 
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write("\n".join(summary_lines) + "\n")
@@ -308,7 +197,7 @@ jobs:
 
       - name: Comment mutation summary on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -348,10 +237,9 @@ jobs:
               per_page: 100,
             });
 
-            const marker = '<!-- mutation-testing-summary -->';
             const existing = comments.data.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes(marker)
+              comment.body.includes('## Mutation Testing Summary')
             );
 
             let trendText = '🆕 baseline';
@@ -373,7 +261,6 @@ jobs:
             }
 
             const body = [
-              marker,
               '## Mutation Testing Summary',
               '',
               '| Metric | Value |',
@@ -382,12 +269,6 @@ jobs:
               `| Killed | **${values.killed}** |`,
               `| Survived | **${values.survived}** |`,
               `| Total evaluated | **${values.total}** |`,
-              '',
-              '### Mutation evidence',
-              '',
-              '- `mutmut-results.txt`: summary',
-              '- `mutmut-show.txt`: details by mutant',
-              '- `mutmut-diffs.txt`: git diff of each surviving mutant',
               '',
               `🔍 **Artifact report:** [Open mutation-report](${artifactUrl})`,
             ].join('\n');
