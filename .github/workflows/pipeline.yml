@@ -48,6 +48,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -101,6 +103,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -111,7 +115,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml', 'setup.cfg') }}
 
       - name: Install dependencies
         run: |
@@ -121,9 +125,11 @@ jobs:
       - name: Configure Python Path
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
+      - name: Prepare mutation report folder
+        run: mkdir -p mutation-report
+
       - name: Run mutation testing
         run: |
-          mkdir -p mutation-report
           mutmut run | tee mutation-report/mutmut-run.txt
 
       - name: Collect mutation results
@@ -133,9 +139,105 @@ jobs:
             echo "=== mutmut results ==="
             mutmut results || true
             echo
-            echo "=== surviving mutants details ==="
-            mutmut results --all || true
+            echo "=== mutmut show summary ==="
+            mutmut show || true
           } | tee mutation-report/mutmut-results.txt
+
+      - name: Extract surviving mutant IDs
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          results_file = Path("mutation-report/mutmut-results.txt")
+          text = results_file.read_text(encoding="utf-8", errors="ignore")
+
+          ids = []
+          for line in text.splitlines():
+              line = line.strip()
+              if not line:
+                  continue
+
+              m_named = re.match(r'^([A-Za-z0-9_./]+(?:__mutmut_\d+)):\s+survived$', line)
+              if m_named:
+                  ids.append(m_named.group(1))
+                  continue
+
+              m_num = re.match(r'^(\d+)\b', line)
+              if m_num:
+                  ids.append(m_num.group(1))
+
+          unique_ids = []
+          seen = set()
+          for mutant_id in ids:
+              if mutant_id not in seen:
+                  unique_ids.append(mutant_id)
+                  seen.add(mutant_id)
+
+          out = Path("mutation-report/surviving-mutants.txt")
+          out.write_text("\n".join(unique_ids) + ("\n" if unique_ids else ""), encoding="utf-8")
+
+          print(f"Detected surviving mutants: {len(unique_ids)}")
+          for item in unique_ids:
+              print(f"- {item}")
+          PY
+
+      - name: Show each surviving mutant
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "=== surviving mutants details ==="
+            echo
+            if [ ! -s mutation-report/surviving-mutants.txt ]; then
+              echo "No surviving mutants detected."
+            else
+              while IFS= read -r mutant_id; do
+                [ -z "$mutant_id" ] && continue
+                echo "----- MUTANT: $mutant_id -----"
+                mutmut show "$mutant_id" || true
+                echo
+              done < mutation-report/surviving-mutants.txt
+            fi
+          } | tee mutation-report/mutmut-show.txt
+
+      - name: Generate diff for each surviving mutant
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "=== surviving mutants git diff ==="
+            echo
+            if [ ! -s mutation-report/surviving-mutants.txt ]; then
+              echo "No surviving mutants detected."
+            else
+              while IFS= read -r mutant_id; do
+                [ -z "$mutant_id" ] && continue
+
+                echo "===== APPLYING: $mutant_id ====="
+
+                # Restaurar solo archivos trackeados sin borrar mutation-report
+                git reset --hard HEAD >/dev/null 2>&1 || true
+                git clean -fd -e mutation-report/ >/dev/null 2>&1 || true
+
+                if mutmut apply "$mutant_id" >/dev/null 2>&1; then
+                  echo "--- git diff for $mutant_id ---"
+                  git --no-pager diff -- . ':(exclude)mutants/' ':(exclude)mutation-report/' || true
+                else
+                  echo "Could not apply mutant: $mutant_id"
+                fi
+
+                echo
+                echo "===== END: $mutant_id ====="
+                echo
+              done < mutation-report/surviving-mutants.txt
+            fi
+
+            git reset --hard HEAD >/dev/null 2>&1 || true
+            git clean -fd -e mutation-report/ >/dev/null 2>&1 || true
+          } | tee mutation-report/mutmut-diffs.txt
 
       - name: Calculate mutation score
         if: always()
@@ -145,40 +247,62 @@ jobs:
           import re
           from pathlib import Path
 
-          run_file = Path("mutation-report/mutmut-run.txt")
-          text = run_file.read_text(encoding="utf-8", errors="ignore")
+          report_dir = Path("mutation-report")
+          report_dir.mkdir(parents=True, exist_ok=True)
 
-          clean = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+          run_file = report_dir / "mutmut-run.txt"
+          survived_file = report_dir / "surviving-mutants.txt"
 
-          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', clean, flags=re.DOTALL)
-          if not matches:
-              killed = 0
-              survived = 0
-          else:
-              killed, survived = map(int, matches[-1])
+          run_text = run_file.read_text(encoding="utf-8", errors="ignore") if run_file.exists() else ""
+          survived_text = survived_file.read_text(encoding="utf-8", errors="ignore") if survived_file.exists() else ""
 
-          total = killed + survived
-          score = round((killed / total) * 100, 2) if total else 0.0
+          def strip_ansi(text: str) -> str:
+              return re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', text)
+
+          run_clean = strip_ansi(run_text)
+
+          surviving_ids = [line.strip() for line in survived_text.splitlines() if line.strip()]
+          survived = len(surviving_ids)
+
+          killed = None
+
+          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', run_clean, flags=re.DOTALL)
+          if matches:
+              killed, survived_from_run = map(int, matches[-1])
+              # Si por alguna razón el archivo de survived quedó vacío, usamos el valor del run
+              if survived == 0:
+                  survived = survived_from_run
+
+          total = killed + survived if killed is not None else None
+          parse_ok = killed is not None and total is not None
+
+          score = round((killed / total) * 100, 2) if parse_ok and total else None
+
+          with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
+              f.write(f"score={'' if score is None else score}\n")
+              f.write(f"killed={'' if killed is None else killed}\n")
+              f.write(f"survived={survived}\n")
+              f.write(f"total={'' if total is None else total}\n")
+              f.write(f"parse_ok={'true' if parse_ok else 'false'}\n")
 
           summary_lines = [
               "## Mutation Testing Summary",
               "",
               "| Metric | Value |",
               "|---|---:|",
-              f"| Mutation Score | **{score}%** |",
-              f"| Killed | **{killed}** |",
+              f"| Mutation Score | **{'pending' if score is None else str(score) + '%'}** |",
+              f"| Killed | **{'pending' if killed is None else killed}** |",
               f"| Survived | **{survived}** |",
-              f"| Total evaluated | **{total}** |",
+              f"| Total evaluated | **{'pending' if total is None else total}** |",
+              "",
+              "### Generated files",
+              "",
+              "- `mutmut-run.txt`",
+              "- `mutmut-results.txt`",
+              "- `mutmut-show.txt`",
+              "- `mutmut-diffs.txt`",
+              "- `surviving-mutants.txt`",
           ]
-
-          report_dir = Path("mutation-report")
-          report_dir.mkdir(parents=True, exist_ok=True)
-
-          with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
-              f.write(f"score={score}\n")
-              f.write(f"killed={killed}\n")
-              f.write(f"survived={survived}\n")
-              f.write(f"total={total}\n")
 
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write("\n".join(summary_lines) + "\n")
@@ -197,7 +321,7 @@ jobs:
 
       - name: Comment mutation summary on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -214,7 +338,6 @@ jobs:
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
             const runId = process.env.GITHUB_RUN_ID;
-            const currentScore = parseFloat(values.score || '0');
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner,
@@ -237,38 +360,87 @@ jobs:
               per_page: 100,
             });
 
+            const marker = '<!-- mutation-testing-summary -->';
             const existing = comments.data.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('## Mutation Testing Summary')
+              (comment.body.includes(marker) || comment.body.includes('## Mutation Testing Summary'))
             );
 
-            let trendText = '🆕 baseline';
+            function extractMetric(body, name) {
+              const re = new RegExp(`\\| ${name} \\| \\*\\*([^*]+)\\*\\*`);
+              const match = body.match(re);
+              return match ? match[1].replace('%', '').trim() : null;
+            }
+
+            let survived = parseInt(values.survived || '0', 10);
+            let killed = values.killed !== '' ? parseInt(values.killed || '0', 10) : null;
+            let total = values.total !== '' ? parseInt(values.total || '0', 10) : null;
+            let score = values.score !== '' ? parseFloat(values.score || '0') : null;
+            const parseOk = values.parse_ok === 'true';
+
+            let previousScore = null;
+            let previousTotal = null;
 
             if (existing) {
-              const match = existing.body.match(/\| Mutation Score \| \*\*(\d+(?:\.\d+)?)%\*\*(?:\s+([^\|]+))?\s+\|/);
-              if (match) {
-                const previousScore = parseFloat(match[1]);
-                const delta = Number((currentScore - previousScore).toFixed(2));
+              const prevScoreRaw = extractMetric(existing.body, 'Mutation Score');
+              const prevTotalRaw = extractMetric(existing.body, 'Total evaluated');
 
-                if (delta > 0) {
-                  trendText = `⬆️ +${delta}%`;
-                } else if (delta < 0) {
-                  trendText = `⬇️ ${delta}%`;
-                } else {
-                  trendText = '➡️ 0.0%';
-                }
+              previousScore = prevScoreRaw !== null ? parseFloat(prevScoreRaw) : null;
+              previousTotal = prevTotalRaw !== null ? parseInt(prevTotalRaw, 10) : null;
+            }
+
+            // Fallback inteligente:
+            // si no pudimos sacar total/killed del run actual pero sí sabemos cuántos survived hay,
+            // reutilizamos el total anterior del comentario.
+            if ((!parseOk || total === null || total === 0) && previousTotal && survived >= 0) {
+              total = previousTotal;
+              killed = Math.max(total - survived, 0);
+              score = total > 0 ? Number(((killed / total) * 100).toFixed(2)) : 0;
+            }
+
+            let trendText = '🆕 baseline';
+            if (previousScore !== null && score !== null) {
+              const delta = Number((score - previousScore).toFixed(2));
+              if (delta > 0) {
+                trendText = `⬆️ +${delta}%`;
+              } else if (delta < 0) {
+                trendText = `⬇️ ${delta}%`;
+              } else {
+                trendText = '➡️ 0.0%';
               }
             }
 
+            const survivedMutants = fs.existsSync('mutation-report/surviving-mutants.txt')
+              ? fs.readFileSync('mutation-report/surviving-mutants.txt', 'utf8')
+                  .split('\n')
+                  .map(x => x.trim())
+                  .filter(Boolean)
+              : [];
+
+            const mutantLines = survivedMutants.length
+              ? survivedMutants.map(x => `- \`${x}\``)
+              : ['- No surviving mutants detected'];
+
             const body = [
+              marker,
               '## Mutation Testing Summary',
               '',
               '| Metric | Value |',
               '|---|---:|',
-              `| Mutation Score | **${values.score}%** ${trendText} |`,
-              `| Killed | **${values.killed}** |`,
-              `| Survived | **${values.survived}** |`,
-              `| Total evaluated | **${values.total}** |`,
+              `| Mutation Score | **${score !== null ? score : 'pending'}${score !== null ? '%' : ''}** ${trendText} |`,
+              `| Killed | **${killed !== null ? killed : 'pending'}** |`,
+              `| Survived | **${survived}** |`,
+              `| Total evaluated | **${total !== null ? total : 'pending'}** |`,
+              '',
+              '### Surviving mutants',
+              '',
+              ...mutantLines,
+              '',
+              '### Mutation evidence',
+              '',
+              '- `mutmut-results.txt`: summary',
+              '- `mutmut-show.txt`: details by mutant',
+              '- `mutmut-diffs.txt`: git diff of each surviving mutant',
               '',
               `🔍 **Artifact report:** [Open mutation-report](${artifactUrl})`,
             ].join('\n');
