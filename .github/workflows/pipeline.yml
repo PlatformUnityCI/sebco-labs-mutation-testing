@@ -265,54 +265,35 @@ jobs:
           survived = len(surviving_ids)
 
           killed = None
-          total = None
 
-          patterns = [
-              r'🎉\s*(\d+).*?🙁\s*(\d+)',
-              r'killed[^0-9]*(\d+).*?survived[^0-9]*(\d+)',
-              r'survived[^0-9]*(\d+).*?killed[^0-9]*(\d+)',
-          ]
+          matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', run_clean, flags=re.DOTALL)
+          if matches:
+              killed, survived_from_run = map(int, matches[-1])
+              # Si por alguna razón el archivo de survived quedó vacío, usamos el valor del run
+              if survived == 0:
+                  survived = survived_from_run
 
-          for pattern in patterns:
-              match = re.search(pattern, run_clean, flags=re.IGNORECASE | re.DOTALL)
-              if match:
-                  a = int(match.group(1))
-                  b = int(match.group(2))
+          total = killed + survived if killed is not None else None
+          parse_ok = killed is not None and total is not None
 
-                  if "survived" in pattern and pattern.startswith("survived"):
-                      survived = a
-                      killed = b
-                  else:
-                      killed = a
-                      survived = b if pattern == r'🎉\s*(\d+).*?🙁\s*(\d+)' or pattern.startswith('killed') else survived
-
-                  total = killed + survived
-                  break
-
-          parse_ok = killed is not None and total is not None and total > 0
-
-          if not parse_ok:
-              killed = ""
-              total = ""
-
-          score = round((int(killed) / int(total)) * 100, 2) if parse_ok else ""
+          score = round((killed / total) * 100, 2) if parse_ok and total else None
 
           with open(report_dir / "mutation-score.txt", "w", encoding="utf-8") as f:
-              f.write(f"score={score}\n")
-              f.write(f"killed={killed}\n")
+              f.write(f"score={'' if score is None else score}\n")
+              f.write(f"killed={'' if killed is None else killed}\n")
               f.write(f"survived={survived}\n")
-              f.write(f"total={total}\n")
-              f.write(f"parse_ok={str(parse_ok).lower()}\n")
+              f.write(f"total={'' if total is None else total}\n")
+              f.write(f"parse_ok={'true' if parse_ok else 'false'}\n")
 
           summary_lines = [
               "## Mutation Testing Summary",
               "",
               "| Metric | Value |",
               "|---|---:|",
-              f"| Mutation Score | **{score if score != '' else 'pending'}{'%' if score != '' else ''}** |",
-              f"| Killed | **{killed if killed != '' else 'pending'}** |",
+              f"| Mutation Score | **{'pending' if score is None else str(score) + '%'}** |",
+              f"| Killed | **{'pending' if killed is None else killed}** |",
               f"| Survived | **{survived}** |",
-              f"| Total evaluated | **{total if total != '' else 'pending'}** |",
+              f"| Total evaluated | **{'pending' if total is None else total}** |",
               "",
               "### Generated files",
               "",
