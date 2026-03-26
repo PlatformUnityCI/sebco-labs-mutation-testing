@@ -217,12 +217,14 @@ jobs:
                 [ -z "$mutant_id" ] && continue
 
                 echo "===== APPLYING: $mutant_id ====="
+
+                # Restaurar solo archivos trackeados sin borrar mutation-report
                 git reset --hard HEAD >/dev/null 2>&1 || true
-                git clean -fd >/dev/null 2>&1 || true
+                git clean -fd -e mutation-report/ >/dev/null 2>&1 || true
 
                 if mutmut apply "$mutant_id" >/dev/null 2>&1; then
                   echo "--- git diff for $mutant_id ---"
-                  git --no-pager diff -- . ':(exclude)mutants/' || true
+                  git --no-pager diff -- . ':(exclude)mutants/' ':(exclude)mutation-report/' || true
                 else
                   echo "Could not apply mutant: $mutant_id"
                 fi
@@ -234,7 +236,7 @@ jobs:
             fi
 
             git reset --hard HEAD >/dev/null 2>&1 || true
-            git clean -fd >/dev/null 2>&1 || true
+            git clean -fd -e mutation-report/ >/dev/null 2>&1 || true
           } | tee mutation-report/mutmut-diffs.txt
 
       - name: Calculate mutation score
