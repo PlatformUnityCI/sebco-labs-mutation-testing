@@ -3,7 +3,7 @@ import logging
 import pytest
 import json
 from dateutil.relativedelta import relativedelta
-from lib_core.time_utils.get_periods import *
+from lib_core.time_utils.get_periods import GetPeriod, REVERSE_MONTHS
 from lib_core.time_utils.date_utils import generate_time
 
 @pytest.mark.regression
