@@ -3,7 +3,7 @@ import logging
 import pytest
 import json
 from dateutil.relativedelta import relativedelta
-from lib_core.time_utils.get_periods import *
+from lib_core.time_utils.get_periods import GetPeriod, REVERSE_MONTHS
 from lib_core.time_utils.date_utils import generate_time
 
 @pytest.mark.regression
@@ -11,7 +11,7 @@ class TestExtractPeriods:
     def setup_method(self):
         self.today = generate_time().split('T')[0]
 
-    def test_qa_reports(self):
+    def test_qa_reports(self, response_json):
         """
         Valida que, con el filtro vacío, el request solamente traiga
         datos del usuario ERA.
