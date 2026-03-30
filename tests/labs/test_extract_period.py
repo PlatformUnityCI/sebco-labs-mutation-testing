@@ -11,12 +11,12 @@ class TestExtractPeriods:
     def setup_method(self):
         self.today = generate_time().split('T')[0]
 
-    def test_qa_reports(self):
+    def test_qa_reports(self, response_json):
         """
         Valida que, con el filtro vacío, el request solamente traiga
         datos del usuario ERA.
         """
-        response = GetPeriod.get_expected_periods() # Acá va el servicio
+        response = response_json # Acá va el servicio
         logging.info(json.dumps(response["periodList"], indent=4))
 
         actual_periods = response["periodList"]  # lista de dicts
