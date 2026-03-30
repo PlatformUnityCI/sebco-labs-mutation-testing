@@ -16,7 +16,7 @@ class TestExtractPeriods:
         Valida que, con el filtro vacío, el request solamente traiga
         datos del usuario ERA.
         """
-        response = response_json # Acá va el servicio
+        response = GetPeriod.get_expected_periods() # Acá va el servicio
         logging.info(json.dumps(response["periodList"], indent=4))
 
         actual_periods = response["periodList"]  # lista de dicts
