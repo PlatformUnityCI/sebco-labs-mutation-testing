@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from lib_core.time_utils.get_periods import GetPeriod, REVERSE_MONTHS
 from lib_core.time_utils.date_utils import generate_time
 
-@pytest.mark.regression
+@pytest.mark.mutmut
 class TestExtractPeriods:
     def setup_method(self):
         self.today = generate_time().split('T')[0]

@@ -17,7 +17,7 @@ on:
         required: true
       pytest_mark:
         description: 'QA mark to run tests'
-        default: regression
+        default: mutmut
         required: true
       run_mutation:
         description: 'Run mutation testing'
@@ -73,7 +73,7 @@ jobs:
       - name: Run tests
         run: |
           mkdir -p report
-          PYTEST_MARK="${{ github.event.inputs.pytest_mark || 'regression' }}"
+          PYTEST_MARK="${{ github.event.inputs.pytest_mark || 'mutmut' }}"
           pytest -m "$PYTEST_MARK" \
             --junitxml=report/junit.xml \
             --html=report/html-report.html \
