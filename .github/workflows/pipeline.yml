@@ -5,23 +5,23 @@ on:
     branches:
       - main
   pull_request:
-    branches: [ "main" ]
-    types: [ opened, synchronize, reopened ]
+    branches: ["main"]
+    types: [opened, synchronize, reopened]
   schedule:
-    - cron: '30 21 * * 1-5'
+    - cron: "30 21 * * 1-5"
   workflow_dispatch:
     inputs:
       branch:
-        description: 'QA repo name'
+        description: "QA repo name"
         default: main
         required: true
       pytest_mark:
-        description: 'QA mark to run tests'
+        description: "QA mark to run tests"
         default: mutmut
         required: true
       run_mutation:
-        description: 'Run mutation testing'
-        default: 'true'
+        description: "Run mutation testing"
+        default: "true"
         required: true
 
 concurrency:
@@ -95,10 +95,7 @@ jobs:
   mutation:
     runs-on: ubuntu-latest
     needs: build
-    if: |
-      github.event_name == 'pull_request' ||
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.run_mutation == 'true')
+    if: false # legacy mutation flow temporarily disabled while validating sebco-qa-engine
 
     steps:
       - name: Checkout repository
@@ -218,7 +215,6 @@ jobs:
 
                 echo "===== APPLYING: $mutant_id ====="
 
-                # Restaurar solo archivos trackeados sin borrar mutation-report
                 git reset --hard HEAD >/dev/null 2>&1 || true
                 git clean -fd -e mutation-report/ >/dev/null 2>&1 || true
 
@@ -269,7 +265,6 @@ jobs:
           matches = re.findall(r'🎉\s*(\d+).*?🙁\s*(\d+)', run_clean, flags=re.DOTALL)
           if matches:
               killed, survived_from_run = map(int, matches[-1])
-              # Si por alguna razón el archivo de survived quedó vacío, usamos el valor del run
               if survived == 0:
                   survived = survived_from_run
 
@@ -389,9 +384,6 @@ jobs:
               previousTotal = prevTotalRaw !== null ? parseInt(prevTotalRaw, 10) : null;
             }
 
-            // Fallback inteligente:
-            // si no pudimos sacar total/killed del run actual pero sí sabemos cuántos survived hay,
-            // reutilizamos el total anterior del comentario.
             if ((!parseOk || total === null || total === 0) && previousTotal && survived >= 0) {
               total = previousTotal;
               killed = Math.max(total - survived, 0);
@@ -464,6 +456,23 @@ jobs:
   qa-engine:
     if: github.event_name == 'pull_request'
     needs: build
+    uses: sebco-labs/sebco-qa-engine/.github/workflows/python-qa.yml@main
+    with:
+      python-version: "3.12"
+      analyzers: "mutmut,flake8,coverage,bandit,radon"
+      output-dir: "qa-report"
+      engine-ref: "main"
+      install-command: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -I
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+
+  qa-guard:
+    if: github.event_name == 'pull_request'
+    needs:
+      - build
+      - qa-engine
     uses: PlatformUnityCI/cross-platform-guard/.github/workflows/ai-review.yml@main
     with:
       language: python
