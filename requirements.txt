@@ -6,3 +6,7 @@ python-dateutil
 # Agrega otras dependencias según sea necesario
 
 mutmut
+flake8
+coverage
+bandit
+radon
