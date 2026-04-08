@@ -307,9 +307,6 @@ This repository is useful for people interested in:
 
 ---
 
-## Author
+## License
 
-**Sebastián Couto**
-QA Engineer | SDET | Automation | Quality Engineering
-
-Focused on test architecture, CI signal quality, meaningful automation, and practical feedback loops for modern engineering teams.
+MIT — see [LICENSE](LICENSE).
