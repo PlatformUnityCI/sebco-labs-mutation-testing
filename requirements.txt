@@ -40,7 +40,7 @@ uc-micro-py==2.0.0
 # Python ecosystem / config / compatibility
 # =========================================================
 iniconfig==2.3.0
-packaging==26.0
+packaging==26.1
 pluggy==1.6.0
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
